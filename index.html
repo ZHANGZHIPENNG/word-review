@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>考研英语 · 智能复习</title>
     <style>
-        /* ========== 样式（同前） ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Roboto, sans-serif;
@@ -21,7 +20,6 @@
             border-radius: 32px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.08);
             padding: 24px 28px 40px;
-            position: relative;
         }
         h1 {
             font-size: 26px;
@@ -97,7 +95,6 @@
         .badge.success { background: #0b8a5e; color: #fff; }
         .badge.warning { background: #d97706; color: #fff; }
         .badge.error { background: #b91c1c; color: #fff; }
-        .badge.chopped-badge { background: #fef3c7; color: #92400e; }
         .hidden { display: none !important; }
         .tabs {
             display: flex;
@@ -348,8 +345,6 @@
             display: none;
         }
         .storage-warning.show { display: block; }
-
-        /* 模态框通用样式 */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -370,31 +365,12 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             animation: slideUp 0.2s ease;
         }
-        .modal-box h3 {
-            font-size: 20px;
-            margin-bottom: 12px;
-        }
-        .modal-box p {
-            font-size: 15px;
-            color: #475569;
-            margin-bottom: 16px;
-        }
-        .modal-box label {
-            display: block;
-            font-weight: 500;
-            margin-top: 12px;
-            font-size: 14px;
-        }
-        .modal-box input {
-            margin-top: 4px;
-        }
-        .modal-box .flex {
-            margin-top: 20px;
-            justify-content: flex-end;
-        }
-        .modal-box .flex button {
-            min-width: 80px;
-        }
+        .modal-box h3 { font-size: 20px; margin-bottom: 12px; }
+        .modal-box p { font-size: 15px; color: #475569; margin-bottom: 16px; }
+        .modal-box label { display: block; font-weight: 500; margin-top: 12px; font-size: 14px; }
+        .modal-box input { margin-top: 4px; }
+        .modal-box .flex { margin-top: 20px; justify-content: flex-end; }
+        .modal-box .flex button { min-width: 80px; }
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -403,7 +379,6 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         .detail-view { display: none; margin-top: 20px; }
         .detail-view.active { display: block; }
         .back-btn { margin-bottom: 16px; }
@@ -412,13 +387,36 @@
         .add-word-row { margin-top: 12px; display: flex; gap: 12px; flex-wrap: wrap; }
         .add-word-row input { flex: 1; min-width: 120px; }
         .quiz-chop-btn {
-            margin-top: 20px;
             background: transparent;
             border: 1.5px dashed #d97706;
             color: #d97706;
             padding: 8px 20px;
         }
         .quiz-chop-btn:hover { background: #fef3c7; transform: none; }
+        .quiz-nav-btn {
+            background: transparent;
+            border: 1.5px solid #cbd5e1;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        .quiz-nav-btn:hover { background: #f1f5f9; transform: none; }
+        .quiz-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .quiz-nav-bar {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .done-hint {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #0b8a5e;
+            background: #e6f7ef;
+            padding: 6px 12px;
+            border-radius: 8px;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -462,13 +460,17 @@
                 <div class="quiz-word" id="quizWord">abandon</div>
                 <div class="quiz-hint" style="font-size:15px; color:#64748b; margin-bottom:28px;">请选择正确的中文释义</div>
                 <div class="quiz-options" id="quizOptions"></div>
-                <div class="quiz-progress" style="margin-top:24px; font-size:14px; color:#64748b;" id="quizProgress">剩余 0 个</div>
+                <div class="quiz-progress" style="margin-top:24px; font-size:14px; color:#64748b;" id="quizProgress">第 1 轮 · 剩余 10 个</div>
                 <div class="quiz-stats" style="display:flex; justify-content:center; gap:32px; margin-top:16px; font-size:14px;">
                     <span>✅ 今日正确 <span class="num green" style="font-weight:700; font-size:18px; color:#0b8a5e;" id="quizCorrect">0</span></span>
                     <span>❌ 今日错误 <span class="num red" style="font-weight:700; font-size:18px; color:#b91c1c;" id="quizWrong">0</span></span>
-                    <span>📊 剩余 <span class="num" style="font-weight:700; font-size:18px;" id="quizRemain">0</span></span>
+                    <span>📊 总剩余 <span class="num" style="font-weight:700; font-size:18px;" id="quizRemain">0</span></span>
                 </div>
-                <button class="quiz-chop-btn" id="btnChopCurrent">🔪 斩掉这个单词（不再复习）</button>
+                <div class="quiz-nav-bar">
+                    <button class="quiz-nav-btn" id="btnPrevWord">← 上一个</button>
+                    <button class="quiz-nav-btn" id="btnNextWord">下一个 →</button>
+                    <button class="quiz-chop-btn" id="btnChopCurrent">🔪 斩掉这个单词</button>
+                </div>
             </div>
         </div>
         <div class="card mt-20" id="planStatus">
@@ -613,7 +615,6 @@
             </div>
             <div class="word-list mt-12" id="dictList"><div class="text-muted text-center" style="padding:20px 0;">加载词库中...</div></div>
         </div>
-
         <div class="card mt-20" id="pendingCard">
             <div class="card-title">📝 待补全单词 <span class="badge warning" id="pendingBadge">0</span></div>
             <p class="text-muted text-sm mb-12">这些单词已加入单词本，但尚未添加中文释义。点击「补全」逐个添加。</p>
@@ -629,7 +630,6 @@
                 <div class="mt-12 text-sm" id="pendingStatus"></div>
             </div>
         </div>
-
         <div class="card mt-20">
             <div class="card-title">➕ 手动添加单词</div>
             <div class="flex">
@@ -653,7 +653,7 @@
     </div>
 </div>
 
-<!-- 通用确认对话框 -->
+<!-- 模态框 -->
 <div class="modal-overlay" id="confirmModal">
     <div class="modal-box">
         <h3 id="confirmTitle">确认</h3>
@@ -664,8 +664,6 @@
         </div>
     </div>
 </div>
-
-<!-- 通用输入对话框（类似 prompt） -->
 <div class="modal-overlay" id="promptModal">
     <div class="modal-box">
         <h3 id="promptTitle">输入</h3>
@@ -677,8 +675,6 @@
         </div>
     </div>
 </div>
-
-<!-- 导入命名对话框（保留） -->
 <div class="modal-overlay" id="importModal">
     <div class="modal-box">
         <h3>📂 新建单词本</h3>
@@ -695,7 +691,7 @@
 
 <script>
 // ================================================================
-//  存储层（与之前相同）
+//  存储层
 // ================================================================
 let useLocalStorage = true;
 let memoryStore = {};
@@ -782,7 +778,7 @@ function saveData(data) {
 }
 
 // ================================================================
-//  词库核心（与之前相同）
+//  词库核心
 // ================================================================
 const FALLBACK_DICT = [
     { word: "abandon", meaning: "离弃，丢弃；遗弃，抛弃；放弃" },
@@ -951,12 +947,11 @@ function removePendingWord(word) {
 }
 
 function resolveSinglePending(word) {
-    // 使用自定义 prompt
     showPrompt(
         `为 "${word}" 输入中文释义：`,
         '',
         (value) => {
-            if (value === null) return; // 取消
+            if (value === null) return;
             const trimmed = value.trim();
             if (!trimmed) {
                 showToast('释义不能为空', 'error');
@@ -1085,70 +1080,6 @@ function renderPending() {
 }
 
 // ================================================================
-//  自定义模态框函数
-// ================================================================
-function showConfirm(message, onConfirm) {
-    const modal = document.getElementById('confirmModal');
-    document.getElementById('confirmMessage').textContent = message;
-    modal.classList.add('show');
-    // 移除旧监听，避免重复绑定
-    const okBtn = document.getElementById('confirmOk');
-    const cancelBtn = document.getElementById('confirmCancel');
-    const newOk = okBtn.cloneNode(true);
-    const newCancel = cancelBtn.cloneNode(true);
-    okBtn.parentNode.replaceChild(newOk, okBtn);
-    cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
-    newOk.addEventListener('click', function() {
-        modal.classList.remove('show');
-        if (onConfirm) onConfirm();
-    });
-    newCancel.addEventListener('click', function() {
-        modal.classList.remove('show');
-    });
-    // 点击外部关闭
-    modal.onclick = function(e) {
-        if (e.target === modal) {
-            modal.classList.remove('show');
-        }
-    };
-}
-
-function showPrompt(message, defaultValue, onConfirm) {
-    const modal = document.getElementById('promptModal');
-    document.getElementById('promptLabel').textContent = message;
-    document.getElementById('promptInput').value = defaultValue || '';
-    modal.classList.add('show');
-    const okBtn = document.getElementById('promptOk');
-    const cancelBtn = document.getElementById('promptCancel');
-    const newOk = okBtn.cloneNode(true);
-    const newCancel = cancelBtn.cloneNode(true);
-    okBtn.parentNode.replaceChild(newOk, okBtn);
-    cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
-    newOk.addEventListener('click', function() {
-        const val = document.getElementById('promptInput').value;
-        modal.classList.remove('show');
-        if (onConfirm) onConfirm(val);
-    });
-    newCancel.addEventListener('click', function() {
-        modal.classList.remove('show');
-        if (onConfirm) onConfirm(null);
-    });
-    modal.onclick = function(e) {
-        if (e.target === modal) {
-            modal.classList.remove('show');
-            if (onConfirm) onConfirm(null);
-        }
-    };
-    // 回车确认
-    document.getElementById('promptInput').onkeydown = function(e) {
-        if (e.key === 'Enter') {
-            newOk.click();
-        }
-    };
-    setTimeout(() => document.getElementById('promptInput').focus(), 100);
-}
-
-// ================================================================
 //  单词本管理
 // ================================================================
 function getTodayKey() { return new Date().toISOString().slice(0,10); }
@@ -1221,7 +1152,7 @@ function removeBook(key) {
             state.currentWords = [];
             state.reviewableWords = [];
             state.isQuizActive = false;
-            updatePlan({ active: false, dayIndex: 0, wordQueue: [] });
+            updatePlan({ active: false, dayIndex: 0, queue: [], queueIndex: 0, currentBook: null });
             updateQuizUI();
         }
         renderBooks();
@@ -1238,7 +1169,7 @@ function clearAllBooks() {
         state.currentWords = [];
         state.reviewableWords = [];
         state.isQuizActive = false;
-        updatePlan({ active: false, dayIndex: 0, wordQueue: [] });
+        updatePlan({ active: false, dayIndex: 0, queue: [], queueIndex: 0, currentBook: null });
         renderBooks();
         updateQuizUI();
         showToast('已清空所有单词本', 'success');
@@ -1304,10 +1235,18 @@ function getErrorWords() {
 }
 
 // ================================================================
-//  计划
+//  计划管理
 // ================================================================
-function getPlan() { const data = loadData(); if (!data.plan) data.plan = {}; return data.plan; }
-function updatePlan(planData) { const data = loadData(); data.plan = { ...data.plan, ...planData }; saveData(data); }
+function getPlan() {
+    const data = loadData();
+    if (!data.plan) data.plan = {};
+    return data.plan;
+}
+function updatePlan(planData) {
+    const data = loadData();
+    data.plan = { ...data.plan, ...planData };
+    saveData(data);
+}
 
 // ================================================================
 //  状态
@@ -1316,7 +1255,10 @@ const state = {
     currentBook: null,
     currentWords: [],
     reviewableWords: [],
-    wordQueue: [],
+    queue: [],
+    currentIndex: 0,
+    totalRounds: 0,
+    roundSize: 0,
     quizCorrect: 0,
     quizWrong: 0,
     isQuizActive: false,
@@ -1347,6 +1289,67 @@ function shuffleArray(arr) {
     return arr;
 }
 function isEnglishWord(str) { return /^[a-zA-Z\-']+$/.test(str.trim()); }
+
+// ================================================================
+//  自定义模态框
+// ================================================================
+function showConfirm(message, onConfirm) {
+    const modal = document.getElementById('confirmModal');
+    document.getElementById('confirmMessage').textContent = message;
+    modal.classList.add('show');
+    const okBtn = document.getElementById('confirmOk');
+    const cancelBtn = document.getElementById('confirmCancel');
+    const newOk = okBtn.cloneNode(true);
+    const newCancel = cancelBtn.cloneNode(true);
+    okBtn.parentNode.replaceChild(newOk, okBtn);
+    cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
+    newOk.addEventListener('click', function() {
+        modal.classList.remove('show');
+        if (onConfirm) onConfirm();
+    });
+    newCancel.addEventListener('click', function() {
+        modal.classList.remove('show');
+    });
+    modal.onclick = function(e) {
+        if (e.target === modal) {
+            modal.classList.remove('show');
+        }
+    };
+}
+
+function showPrompt(message, defaultValue, onConfirm) {
+    const modal = document.getElementById('promptModal');
+    document.getElementById('promptLabel').textContent = message;
+    document.getElementById('promptInput').value = defaultValue || '';
+    modal.classList.add('show');
+    const okBtn = document.getElementById('promptOk');
+    const cancelBtn = document.getElementById('promptCancel');
+    const newOk = okBtn.cloneNode(true);
+    const newCancel = cancelBtn.cloneNode(true);
+    okBtn.parentNode.replaceChild(newOk, okBtn);
+    cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
+    newOk.addEventListener('click', function() {
+        const val = document.getElementById('promptInput').value;
+        modal.classList.remove('show');
+        if (onConfirm) onConfirm(val);
+    });
+    newCancel.addEventListener('click', function() {
+        modal.classList.remove('show');
+        if (onConfirm) onConfirm(null);
+    });
+    modal.onclick = function(e) {
+        if (e.target === modal) {
+            modal.classList.remove('show');
+            if (onConfirm) onConfirm(null);
+        }
+    };
+    document.getElementById('promptInput').onkeydown = function(e) {
+        if (e.key === 'Enter') {
+            newOk.click();
+        }
+    };
+    setTimeout(() => document.getElementById('promptInput').focus(), 100);
+}
 
 // ================================================================
 //  错误记录渲染
@@ -1500,7 +1503,7 @@ function bookClickHandler(key) {
 }
 
 // ================================================================
-//  事件委托（使用 data-action）
+//  全局事件委托
 // ================================================================
 document.addEventListener('click', function(e) {
     const target = e.target.closest('[data-action]');
@@ -1559,38 +1562,8 @@ document.addEventListener('click', function(e) {
 });
 
 // ================================================================
-//  背诵核心
+//  复习核心
 // ================================================================
-function startQuiz() {
-    if (!state.currentBook || state.reviewableWords.length === 0) {
-        showToast('当前词本没有可复习的单词（待补全或已斩单词不参与复习）', 'error');
-        return;
-    }
-    const plan = getPlan();
-    if (!plan.active || plan.dayIndex >= plan.totalDays) {
-        showToast('请先点击 "开始今日复习" 启动计划', 'error');
-        return;
-    }
-    if (plan.wordQueue && plan.wordQueue.length === 0) {
-        if (plan.dayIndex >= plan.totalDays) {
-            showToast('🎉 所有复习计划已完成！', 'success');
-            return;
-        } else {
-            showToast('✅ 今日复习已完成，进入下一天！', 'success');
-            generateDailyQueue();
-            updateQuizUI();
-            renderQuizQuestion();
-            return;
-        }
-    }
-    state.wordQueue = plan.wordQueue || [];
-    state.quizCorrect = 0;
-    state.quizWrong = 0;
-    state.isQuizActive = true;
-    state.wrongFlag = false;
-    renderQuizQuestion();
-    updateQuizUI();
-}
 
 function generateDailyQueue() {
     const plan = getPlan();
@@ -1598,18 +1571,71 @@ function generateDailyQueue() {
     const words = state.reviewableWords;
     if (words.length === 0) {
         showToast('当前词本没有可复习的单词', 'error');
-        return;
+        return [];
     }
     let queue = [];
-    for (let i = 0; i < dailyTimes; i++) {
-        queue = queue.concat(words);
+    for (let round = 0; round < dailyTimes; round++) {
+        const shuffled = shuffleArray([...words]);
+        for (const w of shuffled) {
+            queue.push({ word: w, done: false });
+        }
     }
-    shuffleArray(queue);
-    plan.wordQueue = queue;
-    if (!plan.dayIndex && plan.dayIndex !== 0) plan.dayIndex = 0;
-    plan.active = true;
+    return queue;
+}
+
+function startQuiz() {
+    if (!state.currentBook || state.reviewableWords.length === 0) {
+        showToast('当前词本没有可复习的单词（待补全或已斩单词不参与复习）', 'error');
+        return;
+    }
+    const plan = getPlan();
+    if (!plan.active || plan.dayIndex >= plan.totalDays || plan.currentBook !== state.currentBook) {
+        showToast('请先点击 "开始今日复习" 启动计划', 'error');
+        return;
+    }
+    if (!plan.queue || plan.queue.length === 0) {
+        const queue = generateDailyQueue();
+        if (queue.length === 0) return;
+        plan.queue = queue;
+        plan.queueIndex = 0;
+        updatePlan(plan);
+    }
+    state.queue = plan.queue;
+    state.currentIndex = plan.queueIndex || 0;
+    state.totalRounds = parseInt($('setTimesPerDay').value) || 3;
+    state.roundSize = state.reviewableWords.length;
+    state.quizCorrect = 0;
+    state.quizWrong = 0;
+    state.isQuizActive = true;
+    state.wrongFlag = false;
+    advanceToNext();
+    updateQuizUI();
+}
+
+function advanceToNext() {
+    const plan = getPlan();
+    if (!state.queue || state.queue.length === 0) return;
+    let idx = state.currentIndex;
+    while (idx < state.queue.length && state.queue[idx].done) {
+        idx++;
+    }
+    if (idx >= state.queue.length) {
+        state.isQuizActive = false;
+        showToast('🎉 今日所有单词已完成！', 'success');
+        plan.dayIndex = (plan.dayIndex || 0) + 1;
+        plan.queue = [];
+        plan.queueIndex = 0;
+        if (plan.dayIndex >= plan.totalDays) {
+            plan.active = false;
+        }
+        updatePlan(plan);
+        updateQuizUI();
+        return;
+    }
+    state.currentIndex = idx;
+    plan.queueIndex = idx;
     updatePlan(plan);
-    state.wordQueue = queue;
+    renderQuizQuestion();
 }
 
 function renderQuizQuestion() {
@@ -1620,59 +1646,58 @@ function renderQuizQuestion() {
     const wrongEl = $('quizWrong');
     const remainEl = $('quizRemain');
     const chopBtn = document.getElementById('btnChopCurrent');
+    const prevBtn = document.getElementById('btnPrevWord');
+    const nextBtn = document.getElementById('btnNextWord');
 
     const plan = getPlan();
-    const queue = plan.wordQueue || [];
-
-    if (queue.length === 0) {
-        state.isQuizActive = false;
-        wordEl.textContent = '🎉 今日复习完成！';
-        container.innerHTML = '';
-        progressEl.textContent = '剩余 0 个';
-        correctEl.textContent = state.quizCorrect;
-        wrongEl.textContent = state.quizWrong;
-        remainEl.textContent = '0';
-        chopBtn.classList.add('hidden');
-        plan.dayIndex = (plan.dayIndex || 0) + 1;
-        if (plan.dayIndex >= plan.totalDays) {
-            plan.active = false;
-            showToast('🎉 所有复习计划已完成！', 'success');
-        } else {
-            plan.wordQueue = [];
+    if (!state.isQuizActive || !state.queue || state.queue.length === 0 || state.currentIndex >= state.queue.length) {
+        const allDone = state.queue.every(item => item.done);
+        if (allDone || state.queue.length === 0) {
+            wordEl.textContent = '🎉 今日复习完成！';
+            container.innerHTML = '';
+            progressEl.textContent = '全部完成';
+            correctEl.textContent = state.quizCorrect;
+            wrongEl.textContent = state.quizWrong;
+            remainEl.textContent = '0';
+            chopBtn.classList.add('hidden');
+            prevBtn.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            return;
         }
-        updatePlan(plan);
-        updatePlanInfo();
+        advanceToNext();
         return;
     }
 
-    const word = queue[0];
+    const item = state.queue[state.currentIndex];
+    if (!item) {
+        advanceToNext();
+        return;
+    }
+
+    const word = item.word;
     state.currentWord = word;
     const meaning = lookupMeaning(word);
     if (!meaning) {
-        queue.shift();
+        item.done = true;
+        state.currentIndex++;
         updatePlan(plan);
-        renderQuizQuestion();
+        advanceToNext();
         return;
     }
 
-    chopBtn.classList.remove('hidden');
-    chopBtn.onclick = function() {
-        if (!state.currentBook || !state.currentWord) return;
-        showConfirm(`确定要斩掉 "${state.currentWord}" 吗？它将不再出现在复习中。`, () => {
-            const wordToChop = state.currentWord;
-            const idx = queue.indexOf(wordToChop);
-            if (idx !== -1) queue.splice(idx, 1);
-            chopWord(state.currentBook, wordToChop);
-            const pending = getPendingWords();
-            const pendingSet = new Set(pending.map(w => w.toLowerCase()));
-            state.reviewableWords = state.currentWords.filter(w => !pendingSet.has(w.toLowerCase()));
-            updatePlan(plan);
-            showToast(`已斩 "${wordToChop}"`, 'success');
-            renderQuizQuestion();
-            renderBooks();
-            updateQuizUI();
-        });
-    };
+    const totalItems = state.queue.length;
+    const roundSize = state.roundSize || state.reviewableWords.length || 1;
+    const currentRound = Math.floor(state.currentIndex / roundSize) + 1;
+    const roundStart = (currentRound - 1) * roundSize;
+    const roundEnd = Math.min(currentRound * roundSize, totalItems);
+    let roundRemain = 0;
+    for (let i = state.currentIndex; i < roundEnd; i++) {
+        if (!state.queue[i].done) roundRemain++;
+    }
+    let totalRemain = 0;
+    for (let i = state.currentIndex; i < totalItems; i++) {
+        if (!state.queue[i].done) totalRemain++;
+    }
 
     const allMeanings = dict.map(item => item.meaning).filter(m => m !== meaning);
     const shuffled = shuffleArray([...allMeanings]);
@@ -1682,52 +1707,148 @@ function renderQuizQuestion() {
     const finalOptions = shuffleArray(options);
 
     wordEl.textContent = word;
-    const total = queue.length;
-    progressEl.textContent = `剩余 ${total} 个单词`;
+    progressEl.textContent = `第 ${currentRound} 轮 · 本轮剩余 ${roundRemain} 个`;
     correctEl.textContent = state.quizCorrect;
     wrongEl.textContent = state.quizWrong;
-    remainEl.textContent = total - 1;
+    remainEl.textContent = totalRemain;
 
     container.innerHTML = '';
     state.wrongFlag = false;
 
+    // 上一个按钮
+    prevBtn.classList.remove('hidden');
+    prevBtn.disabled = (state.currentIndex === 0);
+
+    // 下一个按钮：检查后面是否有未完成的
+    let hasNext = false;
+    for (let i = state.currentIndex + 1; i < totalItems; i++) {
+        if (!state.queue[i].done) { hasNext = true; break; }
+    }
+    nextBtn.classList.remove('hidden');
+    nextBtn.disabled = !hasNext;
+
+    // 斩按钮
+    chopBtn.classList.remove('hidden');
+    chopBtn.onclick = function() {
+        if (!state.currentBook || !state.currentWord) return;
+        showConfirm(`确定要斩掉 "${state.currentWord}" 吗？它将不再出现在复习中。`, () => {
+            const wordToChop = state.currentWord;
+            chopWord(state.currentBook, wordToChop);
+            state.queue = state.queue.filter(item => item.word !== wordToChop);
+            plan.queue = state.queue;
+            plan.queueIndex = Math.min(state.currentIndex, state.queue.length - 1);
+            const pending = getPendingWords();
+            const pendingSet = new Set(pending.map(w => w.toLowerCase()));
+            state.reviewableWords = state.currentWords.filter(w => !pendingSet.has(w.toLowerCase()));
+            updatePlan(plan);
+            showToast(`已斩 "${wordToChop}"`, 'success');
+            if (state.queue.length === 0) {
+                state.isQuizActive = false;
+                updateQuizUI();
+            } else {
+                advanceToNext();
+                renderQuizQuestion();
+            }
+            renderBooks();
+            updateQuizUI();
+        });
+    };
+
+    // 上一个按钮点击
+    prevBtn.onclick = function() {
+        if (prevBtn.disabled) return;
+        const newIdx = state.currentIndex - 1;
+        if (newIdx >= 0) {
+            state.currentIndex = newIdx;
+            plan.queueIndex = newIdx;
+            updatePlan(plan);
+            renderQuizQuestion();
+        }
+    };
+
+    // 下一个按钮点击
+    nextBtn.onclick = function() {
+        if (nextBtn.disabled) return;
+        // 从当前+1开始找第一个未完成的
+        let idx = state.currentIndex + 1;
+        while (idx < state.queue.length && state.queue[idx].done) {
+            idx++;
+        }
+        if (idx < state.queue.length) {
+            state.currentIndex = idx;
+            plan.queueIndex = idx;
+            updatePlan(plan);
+            renderQuizQuestion();
+        } else {
+            // 没有未完成的，禁用按钮（理论上不会触发）
+            nextBtn.disabled = true;
+        }
+    };
+
+    // 生成选项
+    const isDone = item.done === true;
     finalOptions.forEach((opt) => {
         const btn = document.createElement('button');
         btn.textContent = opt || '—';
         btn.dataset.meaning = opt;
-        btn.addEventListener('click', function() {
-            const selected = this.dataset.meaning;
-            const isCorrect = selected === meaning;
-            const allBtns = document.querySelectorAll('#quizOptions button');
 
-            if (isCorrect) {
-                queue.shift();
-                updatePlan(plan);
-                state.quizCorrect++;
-                updateRecord(word, getTodayKey(), 1, 0);
-                showToast('✅ 正确！', 'success');
-                renderQuizQuestion();
+        if (isDone) {
+            btn.disabled = true;
+            if (opt === meaning) btn.classList.add('correct');
+            btn.style.cursor = 'default';
+        } else {
+            btn.addEventListener('click', function() {
+                const selected = this.dataset.meaning;
+                const isCorrect = selected === meaning;
+                const allBtns = document.querySelectorAll('#quizOptions button');
+
+                if (isCorrect) {
+                    item.done = true;
+                    state.quizCorrect++;
+                    updateRecord(word, getTodayKey(), 1, 0);
+                    showToast('✅ 正确！', 'success');
+                    plan.queue = state.queue;
+                    plan.queueIndex = state.currentIndex + 1;
+                    updatePlan(plan);
+                    setTimeout(() => {
+                        state.currentIndex++;
+                        advanceToNext();
+                    }, 300);
+                } else {
+                    if (!state.wrongFlag) {
+                        state.wrongFlag = true;
+                        state.quizWrong++;
+                        updateRecord(word, getTodayKey(), 0, 1);
+                        showToast('❌ 错误，请重新选择', 'error');
+                    }
+                    this.classList.add('wrong');
+                    this.disabled = true;
+                    allBtns.forEach(b => {
+                        if (b.dataset.meaning === meaning && b !== this) {
+                            b.classList.add('reveal-correct');
+                        }
+                    });
+                    document.getElementById('quizWrong').textContent = state.quizWrong;
+                }
                 document.getElementById('quizCorrect').textContent = state.quizCorrect;
                 document.getElementById('quizWrong').textContent = state.quizWrong;
-            } else {
-                if (!state.wrongFlag) {
-                    state.wrongFlag = true;
-                    state.quizWrong++;
-                    updateRecord(word, getTodayKey(), 0, 1);
-                    showToast('❌ 错误，请重新选择', 'error');
-                }
-                this.classList.add('wrong');
-                this.disabled = true;
-                allBtns.forEach(b => {
-                    if (b.dataset.meaning === meaning && b !== this) {
-                        b.classList.add('reveal-correct');
-                    }
-                });
-                document.getElementById('quizWrong').textContent = state.quizWrong;
-            }
-        });
+            });
+        }
         container.appendChild(btn);
     });
+
+    // 已完成提示
+    if (isDone) {
+        const oldHint = container.parentNode.querySelector('.done-hint');
+        if (oldHint) oldHint.remove();
+        const hint = document.createElement('div');
+        hint.className = 'done-hint';
+        hint.textContent = '✅ 此单词已答对，点击「上一个」可回看，点击「下一个」继续复习。';
+        container.parentNode.appendChild(hint);
+    } else {
+        const oldHint = container.parentNode.querySelector('.done-hint');
+        if (oldHint) oldHint.remove();
+    }
 }
 
 function updateQuizUI() {
@@ -1735,6 +1856,8 @@ function updateQuizUI() {
     const active = $('quizActive');
     const bookName = $('currentBookName');
     const chopBtn = document.getElementById('btnChopCurrent');
+    const prevBtn = document.getElementById('btnPrevWord');
+    const nextBtn = document.getElementById('btnNextWord');
     if (state.currentBook) {
         const total = state.currentWords.length;
         const reviewable = state.reviewableWords.length;
@@ -1745,31 +1868,18 @@ function updateQuizUI() {
     } else {
         bookName.textContent = '当前词本：未选择';
     }
+
     const plan = getPlan();
-    const queue = plan.wordQueue || [];
-    if (state.currentBook && state.reviewableWords.length > 0 && plan.active && plan.dayIndex < plan.totalDays) {
+    if (state.isQuizActive && state.queue && state.queue.length > 0) {
         empty.classList.add('hidden');
         active.classList.remove('hidden');
-        if (!state.isQuizActive) {
-            if (queue.length > 0) {
-                state.isQuizActive = true;
-                renderQuizQuestion();
-            } else {
-                $('quizWord').textContent = '📖 今日已完成';
-                $('quizOptions').innerHTML = '';
-                $('quizProgress').textContent = '剩余 0 个';
-                $('quizCorrect').textContent = '0';
-                $('quizWrong').textContent = '0';
-                $('quizRemain').textContent = '0';
-                chopBtn.classList.add('hidden');
-            }
-        } else {
-            renderQuizQuestion();
-        }
+        renderQuizQuestion();
     } else {
         empty.classList.remove('hidden');
         active.classList.add('hidden');
         chopBtn.classList.add('hidden');
+        prevBtn.classList.add('hidden');
+        nextBtn.classList.add('hidden');
     }
     updatePlanInfo();
 }
@@ -1784,10 +1894,10 @@ function updatePlanInfo() {
     const dailyTimes = parseInt($('setTimesPerDay')?.value) || 3;
     const totalDays = parseInt($('setTotalDays')?.value) || 7;
 
-    if (plan.active && plan.dayIndex !== undefined) {
+    if (plan.active && plan.dayIndex !== undefined && plan.currentBook === state.currentBook) {
         const day = plan.dayIndex + 1;
         const total = plan.totalDays || totalDays;
-        const queueLen = (plan.wordQueue || []).length;
+        const queueLen = (plan.queue || []).filter(item => !item.done).length;
         infoEl.textContent = `📅 第 ${day}/${total} 天 · 剩余 ${queueLen} 个任务`;
         detailEl.textContent = `每个单词每日 ${dailyTimes} 次，共 ${total} 天`;
         if (plan.dayIndex >= total) {
@@ -1814,45 +1924,56 @@ $('btnStartPlan')?.addEventListener('click', function() {
     let plan = getPlan();
     const today = getTodayKey();
 
-    if (!plan.active || plan.dayIndex >= plan.totalDays || plan.startDate !== today) {
+    if (!plan.active || plan.dayIndex >= plan.totalDays || plan.startDate !== today || plan.currentBook !== state.currentBook) {
         plan = {
             active: true,
             startDate: today,
             totalDays: totalDays,
             dailyTimes: dailyTimes,
             dayIndex: 0,
-            wordQueue: []
+            currentBook: state.currentBook,
+            queue: [],
+            queueIndex: 0
         };
-        let queue = [];
-        for (let i = 0; i < dailyTimes; i++) {
-            queue = queue.concat(state.reviewableWords);
-        }
-        shuffleArray(queue);
-        plan.wordQueue = queue;
+        const queue = generateDailyQueue();
+        if (queue.length === 0) return;
+        plan.queue = queue;
+        plan.queueIndex = 0;
         updatePlan(plan);
-        state.wordQueue = queue;
+        state.queue = queue;
+        state.currentIndex = 0;
         state.isQuizActive = true;
         showToast(`📅 第1天开始，共 ${queue.length} 次复习`, 'success');
     } else {
-        if (plan.wordQueue && plan.wordQueue.length > 0) {
-            showToast('继续未完成的复习', 'success');
-        } else {
-            if (plan.dayIndex < plan.totalDays - 1) {
-                plan.dayIndex++;
-                let queue = [];
-                for (let i = 0; i < dailyTimes; i++) {
-                    queue = queue.concat(state.reviewableWords);
-                }
-                shuffleArray(queue);
-                plan.wordQueue = queue;
-                updatePlan(plan);
-                state.wordQueue = queue;
-                state.isQuizActive = true;
-                showToast(`📅 第 ${plan.dayIndex+1} 天开始`, 'success');
+        if (plan.queue && plan.queue.length > 0) {
+            const hasUndone = plan.queue.some(item => !item.done);
+            if (hasUndone) {
+                showToast('继续未完成的复习', 'success');
             } else {
-                showToast('🎉 所有复习计划已完成！', 'success');
-                return;
+                if (plan.dayIndex < plan.totalDays - 1) {
+                    plan.dayIndex++;
+                    const queue = generateDailyQueue();
+                    plan.queue = queue;
+                    plan.queueIndex = 0;
+                    updatePlan(plan);
+                    state.queue = queue;
+                    state.currentIndex = 0;
+                    state.isQuizActive = true;
+                    showToast(`📅 第 ${plan.dayIndex+1} 天开始`, 'success');
+                } else {
+                    showToast('🎉 所有复习计划已完成！', 'success');
+                    return;
+                }
             }
+        } else {
+            const queue = generateDailyQueue();
+            plan.queue = queue;
+            plan.queueIndex = 0;
+            updatePlan(plan);
+            state.queue = queue;
+            state.currentIndex = 0;
+            state.isQuizActive = true;
+            showToast('生成新的复习队列', 'success');
         }
     }
     updateQuizUI();
@@ -1864,8 +1985,10 @@ $('btnStartPlan')?.addEventListener('click', function() {
 
 $('btnResetPlan')?.addEventListener('click', function() {
     showConfirm('确定要重置所有复习进度吗？', () => {
-        updatePlan({ active: false, dayIndex: 0, wordQueue: [], startDate: '' });
+        updatePlan({ active: false, dayIndex: 0, queue: [], queueIndex: 0, currentBook: null });
         state.isQuizActive = false;
+        state.queue = [];
+        state.currentIndex = 0;
         updatePlanInfo();
         updateQuizUI();
         showToast('已重置计划', 'success');
@@ -1874,21 +1997,18 @@ $('btnResetPlan')?.addEventListener('click', function() {
 
 $('btnResetQuiz')?.addEventListener('click', function() {
     const plan = getPlan();
-    if (!plan.active || plan.dayIndex >= plan.totalDays) {
+    if (!plan.active || plan.dayIndex >= plan.totalDays || plan.currentBook !== state.currentBook) {
         showToast('请先开始复习计划', 'error');
         return;
     }
     showConfirm('确定要重新开始今日复习吗？当前进度将丢失。', () => {
-        const dailyTimes = parseInt($('setTimesPerDay').value) || 3;
-        const words = state.reviewableWords;
-        let queue = [];
-        for (let i = 0; i < dailyTimes; i++) {
-            queue = queue.concat(words);
-        }
-        shuffleArray(queue);
-        plan.wordQueue = queue;
+        const queue = generateDailyQueue();
+        if (queue.length === 0) return;
+        plan.queue = queue;
+        plan.queueIndex = 0;
         updatePlan(plan);
-        state.wordQueue = queue;
+        state.queue = queue;
+        state.currentIndex = 0;
         state.quizCorrect = 0;
         state.quizWrong = 0;
         state.isQuizActive = true;
@@ -1899,55 +2019,38 @@ $('btnResetQuiz')?.addEventListener('click', function() {
 });
 
 // ================================================================
-//  导入对话框
+//  切换词本
 // ================================================================
-let pendingImportData = null;
-
-function showImportDialog(words) {
-    pendingImportData = words;
-    const modal = document.getElementById('importModal');
-    const nameInput = document.getElementById('modalBookName');
-    const dateInput = document.getElementById('modalBookDate');
-    const today = new Date();
-    nameInput.value = today.toISOString().slice(0,10);
-    dateInput.value = today.toISOString().slice(0,10);
-    modal.classList.add('show');
-    nameInput.focus();
-}
-
-document.getElementById('modalCancel')?.addEventListener('click', function() {
-    document.getElementById('importModal').classList.remove('show');
-    pendingImportData = null;
-});
-
-document.getElementById('modalConfirm')?.addEventListener('click', function() {
-    const nameInput = document.getElementById('modalBookName');
-    const dateInput = document.getElementById('modalBookDate');
-    let bookName = nameInput.value.trim();
-    const bookDate = dateInput.value.trim();
-    if (!bookName) {
-        if (bookDate) bookName = bookDate;
-        else bookName = getTodayKey();
+window.selectBook = function(key) {
+    state.currentBook = key;
+    state.currentWords = [...new Set(getBookWords(key))];
+    const pending = getPendingWords();
+    const pendingSet = new Set(pending.map(w => w.toLowerCase()));
+    state.reviewableWords = state.currentWords.filter(w => !pendingSet.has(w.toLowerCase()));
+    state.quizCorrect = 0;
+    state.quizWrong = 0;
+    state.isQuizActive = false;
+    const plan = getPlan();
+    if (plan.currentBook !== key) {
+        plan.active = false;
+        updatePlan(plan);
     }
-    if (bookDate && bookName !== bookDate) {
-        bookName = bookName + ' (' + bookDate + ')';
-    }
-    if (pendingImportData) {
-        doImport(bookName, pendingImportData);
-        pendingImportData = null;
-    }
-    document.getElementById('importModal').classList.remove('show');
-});
+    updateQuizUI();
+    renderBooks();
+    showToast(`已选择单词本: ${key} (${state.reviewableWords.length} 可复习，${state.currentWords.length - state.reviewableWords.length} 待补全/已斩)`, 'success');
+    updatePlanInfo();
+};
 
-document.getElementById('importModal')?.addEventListener('click', function(e) {
-    if (e.target === this) {
-        this.classList.remove('show');
-        pendingImportData = null;
-    }
+window.deleteBook = function(key) {
+    removeBook(key);
+};
+
+$('btnSelectBook')?.addEventListener('click', function() {
+    document.querySelector('#tabNav button[data-tab="books"]').click();
 });
 
 // ================================================================
-//  导入功能
+//  导入相关（省略，因为之前已包含完整）
 // ================================================================
 document.getElementById('fileInputDict')?.addEventListener('change', function(e) {
     const file = this.files[0];
@@ -2158,6 +2261,54 @@ document.getElementById('btnClearPending')?.addEventListener('click', function()
 });
 
 // ================================================================
+//  导入对话框
+// ================================================================
+let pendingImportData = null;
+
+function showImportDialog(words) {
+    pendingImportData = words;
+    const modal = document.getElementById('importModal');
+    const nameInput = document.getElementById('modalBookName');
+    const dateInput = document.getElementById('modalBookDate');
+    const today = new Date();
+    nameInput.value = today.toISOString().slice(0,10);
+    dateInput.value = today.toISOString().slice(0,10);
+    modal.classList.add('show');
+    nameInput.focus();
+}
+
+document.getElementById('modalCancel')?.addEventListener('click', function() {
+    document.getElementById('importModal').classList.remove('show');
+    pendingImportData = null;
+});
+
+document.getElementById('modalConfirm')?.addEventListener('click', function() {
+    const nameInput = document.getElementById('modalBookName');
+    const dateInput = document.getElementById('modalBookDate');
+    let bookName = nameInput.value.trim();
+    const bookDate = dateInput.value.trim();
+    if (!bookName) {
+        if (bookDate) bookName = bookDate;
+        else bookName = getTodayKey();
+    }
+    if (bookDate && bookName !== bookDate) {
+        bookName = bookName + ' (' + bookDate + ')';
+    }
+    if (pendingImportData) {
+        doImport(bookName, pendingImportData);
+        pendingImportData = null;
+    }
+    document.getElementById('importModal').classList.remove('show');
+});
+
+document.getElementById('importModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.classList.remove('show');
+        pendingImportData = null;
+    }
+});
+
+// ================================================================
 //  单词本列表渲染
 // ================================================================
 function renderBooks() {
@@ -2192,26 +2343,6 @@ function renderBooks() {
         </div>`;
     }).join('');
 }
-
-window.selectBook = function(key) {
-    state.currentBook = key;
-    state.currentWords = [...new Set(getBookWords(key))];
-    const pending = getPendingWords();
-    const pendingSet = new Set(pending.map(w => w.toLowerCase()));
-    state.reviewableWords = state.currentWords.filter(w => !pendingSet.has(w.toLowerCase()));
-    state.quizCorrect = 0;
-    state.quizWrong = 0;
-    state.isQuizActive = false;
-    updatePlan({ active: false, dayIndex: 0, wordQueue: [] });
-    updateQuizUI();
-    renderBooks();
-    showToast(`已选择单词本: ${key} (${state.reviewableWords.length} 可复习，${state.currentWords.length - state.reviewableWords.length} 待补全/已斩)`, 'success');
-    updatePlanInfo();
-};
-
-window.deleteBook = function(key) {
-    removeBook(key); // 内部已使用自定义 confirm
-};
 
 // ================================================================
 //  设置
@@ -2346,10 +2477,13 @@ function init() {
 
     const plan = getPlan();
     if (plan.active && plan.dayIndex !== undefined && plan.dayIndex < plan.totalDays) {
-        state.isQuizActive = true;
-        if (!plan.wordQueue) plan.wordQueue = [];
+        if (plan.queue && plan.queue.length > 0) {
+            state.queue = plan.queue;
+            state.currentIndex = plan.queueIndex || 0;
+            state.isQuizActive = true;
+        }
     } else {
-        updatePlan({ active: false, dayIndex: 0, wordQueue: [] });
+        updatePlan({ active: false, dayIndex: 0, queue: [], queueIndex: 0, currentBook: null });
     }
 
     const books = getBookNames();
@@ -2367,9 +2501,14 @@ function init() {
     renderDict();
     updatePlanInfo();
 
-    if (plan.active && plan.wordQueue && plan.wordQueue.length > 0) {
-        state.isQuizActive = true;
-        renderQuizQuestion();
+    if (state.isQuizActive && state.queue && state.queue.length > 0) {
+        const allDone = state.queue.every(item => item.done);
+        if (!allDone) {
+            renderQuizQuestion();
+        } else {
+            state.isQuizActive = false;
+            updateQuizUI();
+        }
     }
 
     console.log('📚 应用已初始化，词库大小:', dict.length, '单词本:', books.length, '待补全:', getPendingWords().length);
