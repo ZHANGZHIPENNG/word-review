@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>考研英语单词复习 · 2026大纲</title>
+    <title>考研英语 · 单词复习</title>
     <style>
-        /* ========== 样式（同前，略作精简） ========== */
+        /* ========== 样式（同前，精简） ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             background: #f0f4f9;
             color: #1e293b;
             min-height: 100vh;
@@ -17,7 +17,7 @@
         .app-container {
             max-width: 1000px;
             margin: 0 auto;
-            background: #ffffff;
+            background: #fff;
             border-radius: 32px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.08);
             padding: 24px 28px 40px;
@@ -33,12 +33,7 @@
             margin-bottom: 24px;
             flex-wrap: wrap;
         }
-        h1 small {
-            font-size: 14px;
-            font-weight: 400;
-            color: #64748b;
-            margin-left: 8px;
-        }
+        h1 small { font-size: 14px; font-weight: 400; color: #64748b; margin-left: 8px; }
         button {
             cursor: pointer;
             font-family: inherit;
@@ -206,7 +201,7 @@
             padding: 12px 0;
             border-bottom: 1px solid #f1f5f9;
         }
-        .setting-row label { font-weight: 500; min-width: 100px; font-size: 14px; }
+        .setting-row label { font-weight: 500; min-width: 140px; font-size: 14px; }
         .setting-row input { width: 80px; flex-shrink: 0; }
         .book-item {
             display: flex;
@@ -341,1208 +336,1262 @@
             margin-bottom: 16px;
             display: none;
         }
-        .storage-warning.show {
-            display: block;
-        }
+        .storage-warning.show { display: block; }
     </style>
 </head>
 <body>
-    <div class="app-container" id="app">
-        <h1>
-            📚 考研英语单词复习
-            <small>2026 大纲 · 智能记忆</small>
-            <span id="dictStatusBadge" class="dict-status success">
-                ✅ 备用词库已加载
-            </span>
-        </h1>
+<div class="app-container" id="app">
+    <h1>
+        📚 考研英语 · 单词复习
+        <small>2026 大纲 · 智能记忆</small>
+        <span id="dictStatusBadge" class="dict-status success">✅ 备用词库已加载</span>
+    </h1>
 
-        <!-- 存储状态提示 -->
-        <div id="storageWarning" class="storage-warning">
-            ⚠️ 当前浏览器环境不支持 localStorage，数据将保存在内存中，刷新页面会丢失。
-        </div>
+    <div id="storageWarning" class="storage-warning">
+        ⚠️ 当前浏览器不支持 localStorage，数据将保存在内存中，刷新会丢失。
+    </div>
 
-        <div class="tabs" id="tabNav">
-            <button class="active" data-tab="quiz">📖 背诵</button>
-            <button data-tab="import">📥 导入</button>
-            <button data-tab="books">📂 单词本</button>
-            <button data-tab="settings">⚙️ 设置</button>
-            <button data-tab="manage">📋 词库</button>
-        </div>
+    <div class="tabs" id="tabNav">
+        <button class="active" data-tab="quiz">📖 背诵</button>
+        <button data-tab="import">📥 导入</button>
+        <button data-tab="books">📂 单词本</button>
+        <button data-tab="settings">⚙️ 设置</button>
+        <button data-tab="manage">📋 词库</button>
+    </div>
 
-        <!-- 背诵 -->
-        <div id="tabQuiz" class="tab-content">
-            <div class="flex-between mb-12">
-                <span class="badge primary" id="currentBookName">当前词本：未选择</span>
-                <div class="flex gap-8">
-                    <button class="outline" id="btnResetQuiz">🔄 重新开始</button>
-                    <button class="outline" id="btnSelectBook">📂 切换词本</button>
-                </div>
-            </div>
-            <div class="quiz-box" id="quizBox">
-                <div id="quizEmpty" class="text-muted" style="padding:40px 0;">
-                    <div style="font-size:48px; margin-bottom:12px;">📭</div>
-                    <p style="font-size:18px; font-weight:500; color:#475569;">还没有单词</p>
-                    <p style="font-size:14px;">请先导入单词或选择一个单词本</p>
-                </div>
-                <div id="quizActive" class="hidden">
-                    <div class="quiz-word" id="quizWord">abandon</div>
-                    <div class="quiz-hint" style="font-size:15px; color:#64748b; margin-bottom:28px;">请选择正确的中文释义</div>
-                    <div class="quiz-options" id="quizOptions"></div>
-                    <div class="quiz-progress" style="margin-top:24px; font-size:14px; color:#64748b;" id="quizProgress">第 1 / 10 个单词</div>
-                    <div class="quiz-stats" style="display:flex; justify-content:center; gap:32px; margin-top:16px; font-size:14px;">
-                        <span>✅ 正确 <span class="num green" style="font-weight:700; font-size:18px; color:#0b8a5e;" id="quizCorrect">0</span></span>
-                        <span>❌ 错误 <span class="num red" style="font-weight:700; font-size:18px; color:#b91c1c;" id="quizWrong">0</span></span>
-                        <span>📊 剩余 <span class="num" style="font-weight:700; font-size:18px;" id="quizRemain">0</span></span>
-                    </div>
-                </div>
-            </div>
-            <div class="card mt-20" id="planStatus">
-                <div class="flex-between">
-                    <span class="card-title" style="margin-bottom:0;">📅 复习计划</span>
-                    <span id="planInfo" class="text-muted">未设置</span>
-                </div>
-                <div class="flex gap-8 mt-12" id="planActions">
-                    <button class="primary" id="btnStartPlan">▶ 开始今日复习</button>
-                    <button class="outline" id="btnResetPlan">重置进度</button>
-                </div>
-                <div class="mt-12 text-sm text-muted" id="planDetail"></div>
+    <!-- 背诵 -->
+    <div id="tabQuiz" class="tab-content">
+        <div class="flex-between mb-12">
+            <span class="badge primary" id="currentBookName">当前词本：未选择</span>
+            <div class="flex gap-8">
+                <button class="outline" id="btnResetQuiz">🔄 重新开始</button>
+                <button class="outline" id="btnSelectBook">📂 切换词本</button>
             </div>
         </div>
-
-        <!-- 导入 -->
-        <div id="tabImport" class="tab-content hidden">
-            <div class="grid-2">
-                <!-- 上传词库文件 -->
-                <div class="card">
-                    <div class="card-title">📂 上传词库文件 (TXT)</div>
-                    <p class="text-muted text-sm mb-12">
-                        选择你的 <code>dict.txt</code> 文件（每行格式：<code>{ word: "xxx", meaning: "xxx" }</code>）
-                    </p>
-                    <div class="file-upload-wrapper" style="width:100%;">
-                        <button class="primary" style="width:100%;">📤 选择文件并加载词库</button>
-                        <input type="file" id="fileInputDict" accept=".txt" />
-                    </div>
-                    <div class="mt-12 text-sm" id="dictLoadResult"></div>
-                </div>
-
-                <!-- 导入单词列表 -->
-                <div class="card">
-                    <div class="card-title">📝 导入单词列表</div>
-                    <p class="text-muted text-sm mb-12">每行一个英文单词，自动匹配词库释义</p>
-                    <textarea id="importText" placeholder="example&#10;abandon&#10;ability"></textarea>
-                    <div class="flex mt-12">
-                        <button class="primary" id="btnImportTxt">导入单词</button>
-                        <button class="outline" id="btnClearImport">清空</button>
-                        <div class="file-upload-wrapper">
-                            <button class="outline">📂 上传TXT</button>
-                            <input type="file" id="fileInputTxt" accept=".txt" />
-                        </div>
-                    </div>
-                    <div class="mt-12 text-sm text-muted" id="importResult"></div>
-                </div>
+        <div class="quiz-box" id="quizBox">
+            <div id="quizEmpty" class="text-muted" style="padding:40px 0;">
+                <div style="font-size:48px; margin-bottom:12px;">📭</div>
+                <p style="font-size:18px; font-weight:500; color:#475569;">还没有单词</p>
+                <p style="font-size:14px;">请先导入单词或选择一个单词本</p>
             </div>
-
-            <!-- 导入完整大纲词库（粘贴） -->
-            <div class="card mt-20">
-                <div class="card-title">📚 导入完整考研大纲词库（粘贴）</div>
-                <p class="text-muted text-sm mb-12">支持格式：<code>单词 /音标/ 释义</code> 或 <code>单词 释义</code>（每行一个）</p>
-                <textarea id="importPdfText" placeholder="粘贴考研大纲词库文本..."></textarea>
-                <div class="flex mt-12">
-                    <button class="success" id="btnImportPdf">解析并导入词库</button>
-                    <div class="file-upload-wrapper">
-                        <button class="outline">📂 上传文件</button>
-                        <input type="file" id="fileInputPdf" accept=".txt" />
-                    </div>
+            <div id="quizActive" class="hidden">
+                <div class="quiz-word" id="quizWord">abandon</div>
+                <div class="quiz-hint" style="font-size:15px; color:#64748b; margin-bottom:28px;">请选择正确的中文释义</div>
+                <div class="quiz-options" id="quizOptions"></div>
+                <div class="quiz-progress" style="margin-top:24px; font-size:14px; color:#64748b;" id="quizProgress">剩余 0 个</div>
+                <div class="quiz-stats" style="display:flex; justify-content:center; gap:32px; margin-top:16px; font-size:14px;">
+                    <span>✅ 今日正确 <span class="num green" style="font-weight:700; font-size:18px; color:#0b8a5e;" id="quizCorrect">0</span></span>
+                    <span>❌ 今日错误 <span class="num red" style="font-weight:700; font-size:18px; color:#b91c1c;" id="quizWrong">0</span></span>
+                    <span>📊 剩余 <span class="num" style="font-weight:700; font-size:18px;" id="quizRemain">0</span></span>
                 </div>
-                <div class="mt-12 text-sm" id="importPdfResult"></div>
-                <div class="progress-bar hidden" id="importProgress"><div class="fill" id="importProgressFill"></div></div>
-            </div>
-
-            <div class="card mt-20">
-                <div class="flex-between">
-                    <span class="card-title" style="margin-bottom:0;">📌 快速体验</span>
-                    <button class="outline" id="btnLoadSample">加载示例单词 (50个)</button>
-                </div>
-                <div class="text-sm text-muted mt-12">点击上方按钮可快速导入50个常用考研词汇用于测试。</div>
             </div>
         </div>
-
-        <!-- 单词本 -->
-        <div id="tabBooks" class="tab-content hidden">
-            <div class="flex-between mb-12">
-                <span class="card-title" style="margin-bottom:0;">📂 我的单词本</span>
-                <button class="danger outline" id="btnClearAllBooks">🗑️ 清空所有</button>
+        <div class="card mt-20" id="planStatus">
+            <div class="flex-between">
+                <span class="card-title" style="margin-bottom:0;">📅 复习计划</span>
+                <span id="planInfo" class="text-muted">未设置</span>
             </div>
-            <div id="bookList" class="word-list">
-                <div class="text-muted text-center" style="padding:40px 0;">暂无单词本</div>
+            <div class="flex gap-8 mt-12" id="planActions">
+                <button class="primary" id="btnStartPlan">▶ 开始今日复习</button>
+                <button class="outline" id="btnResetPlan">重置进度</button>
             </div>
-        </div>
-
-        <!-- 设置 -->
-        <div id="tabSettings" class="tab-content hidden">
-            <div class="card">
-                <div class="card-title">⚙️ 复习设置</div>
-                <div class="setting-row">
-                    <label>每日复习次数</label>
-                    <input type="number" id="setTimesPerDay" min="1" max="100" value="10" />
-                    <span class="desc">每天需要复习的单词总数</span>
-                </div>
-                <div class="setting-row">
-                    <label>复习总天数</label>
-                    <input type="number" id="setTotalDays" min="1" max="365" value="7" />
-                    <span class="desc">计划复习多少天</span>
-                </div>
-                <div class="flex mt-12">
-                    <button class="primary" id="btnSaveSettings">💾 保存设置</button>
-                </div>
-                <div class="mt-12 text-sm text-muted" id="settingsStatus"></div>
-            </div>
-            <div class="card mt-20">
-                <div class="card-title">📊 复习进度</div>
-                <div id="progressStats" class="text-muted">加载中...</div>
-            </div>
-        </div>
-
-        <!-- 词库管理 -->
-        <div id="tabManage" class="tab-content hidden">
-            <div class="card">
-                <div class="flex-between">
-                    <span class="card-title" style="margin-bottom:0;">📋 词库管理</span>
-                    <span id="dictSize" class="badge">0 词</span>
-                </div>
-                <div class="flex mt-12">
-                    <input type="text" id="dictSearch" placeholder="搜索单词..." style="flex:1; max-width:300px;" />
-                    <button class="outline" id="btnDictSearch">搜索</button>
-                    <button class="outline" id="btnDictReset">显示全部</button>
-                </div>
-                <div class="word-list mt-12" id="dictList">
-                    <div class="text-muted text-center" style="padding:20px 0;">加载词库中...</div>
-                </div>
-            </div>
-            <div class="card mt-20">
-                <div class="card-title">➕ 手动添加单词</div>
-                <div class="flex">
-                    <input type="text" id="manualWord" placeholder="英文单词" style="flex:1; max-width:200px;" />
-                    <input type="text" id="manualMeaning" placeholder="中文释义" style="flex:2; max-width:350px;" />
-                    <button class="success" id="btnManualAdd">添加</button>
-                </div>
-                <div class="mt-12 text-sm text-muted" id="manualResult"></div>
-            </div>
+            <div class="mt-12 text-sm text-muted" id="planDetail"></div>
         </div>
     </div>
 
-    <script>
-        // ================================================================
-        //  0. 存储层（支持 localStorage 降级到内存）
-        // ================================================================
-        let useLocalStorage = true;
-        let memoryStore = {};
+    <!-- 导入 -->
+    <div id="tabImport" class="tab-content hidden">
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-title">📂 上传词库文件 (TXT)</div>
+                <p class="text-muted text-sm mb-12">
+                    选择你的 <code>dict.txt</code> 文件（每行格式：<code>{ word: "xxx", meaning: "xxx" }</code>）
+                </p>
+                <div class="file-upload-wrapper" style="width:100%;">
+                    <button class="primary" style="width:100%;">📤 选择文件并加载词库</button>
+                    <input type="file" id="fileInputDict" accept=".txt" />
+                </div>
+                <div class="mt-12 text-sm" id="dictLoadResult"></div>
+            </div>
+            <div class="card">
+                <div class="card-title">📝 导入单词列表</div>
+                <p class="text-muted text-sm mb-12">每行一个英文单词，自动匹配词库释义</p>
+                <textarea id="importText" placeholder="example&#10;abandon&#10;ability"></textarea>
+                <div class="flex mt-12">
+                    <button class="primary" id="btnImportTxt">导入单词</button>
+                    <button class="outline" id="btnClearImport">清空</button>
+                    <div class="file-upload-wrapper">
+                        <button class="outline">📂 上传TXT</button>
+                        <input type="file" id="fileInputTxt" accept=".txt" />
+                    </div>
+                </div>
+                <div class="mt-12 text-sm text-muted" id="importResult"></div>
+            </div>
+        </div>
+        <div class="card mt-20">
+            <div class="card-title">📚 导入完整考研大纲词库（粘贴）</div>
+            <p class="text-muted text-sm mb-12">支持格式：<code>单词 /音标/ 释义</code> 或 <code>单词 释义</code>（每行一个）</p>
+            <textarea id="importPdfText" placeholder="粘贴考研大纲词库文本..."></textarea>
+            <div class="flex mt-12">
+                <button class="success" id="btnImportPdf">解析并导入词库</button>
+                <div class="file-upload-wrapper">
+                    <button class="outline">📂 上传文件</button>
+                    <input type="file" id="fileInputPdf" accept=".txt" />
+                </div>
+            </div>
+            <div class="mt-12 text-sm" id="importPdfResult"></div>
+            <div class="progress-bar hidden" id="importProgress"><div class="fill" id="importProgressFill"></div></div>
+        </div>
+        <div class="card mt-20">
+            <div class="flex-between">
+                <span class="card-title" style="margin-bottom:0;">📌 快速体验</span>
+                <button class="outline" id="btnLoadSample">加载示例单词 (50个)</button>
+            </div>
+            <div class="text-sm text-muted mt-12">点击上方按钮可快速导入50个常用考研词汇用于测试。</div>
+        </div>
+    </div>
 
-        function getStorage() {
-            try {
-                if (typeof localStorage !== 'undefined') {
-                    // 测试是否能读写
-                    localStorage.setItem('__test__', '1');
-                    localStorage.removeItem('__test__');
-                    return localStorage;
-                }
-            } catch (e) {
-                // localStorage 不可用
-                console.warn('localStorage 不可用，使用内存存储', e);
-                document.getElementById('storageWarning').classList.add('show');
-                useLocalStorage = false;
-                return null;
-            }
-            // 安全回退
-            document.getElementById('storageWarning').classList.add('show');
+    <!-- 单词本 -->
+    <div id="tabBooks" class="tab-content hidden">
+        <div class="flex-between mb-12">
+            <span class="card-title" style="margin-bottom:0;">📂 我的单词本</span>
+            <button class="danger outline" id="btnClearAllBooks">🗑️ 清空所有</button>
+        </div>
+        <div id="bookList" class="word-list"><div class="text-muted text-center" style="padding:40px 0;">暂无单词本</div></div>
+    </div>
+
+    <!-- 设置 -->
+    <div id="tabSettings" class="tab-content hidden">
+        <div class="card">
+            <div class="card-title">⚙️ 复习设置</div>
+            <div class="setting-row">
+                <label>每个单词每日复习次数</label>
+                <input type="number" id="setTimesPerDay" min="1" max="50" value="3" />
+                <span class="desc">每天每个单词需要答对的次数</span>
+            </div>
+            <div class="setting-row">
+                <label>复习总天数</label>
+                <input type="number" id="setTotalDays" min="1" max="365" value="7" />
+                <span class="desc">计划连续复习多少天</span>
+            </div>
+            <div class="flex mt-12">
+                <button class="primary" id="btnSaveSettings">💾 保存设置</button>
+            </div>
+            <div class="mt-12 text-sm text-muted" id="settingsStatus"></div>
+        </div>
+        <div class="card mt-20">
+            <div class="card-title">📊 复习进度</div>
+            <div id="progressStats" class="text-muted">加载中...</div>
+        </div>
+    </div>
+
+    <!-- 词库管理 -->
+    <div id="tabManage" class="tab-content hidden">
+        <div class="card">
+            <div class="flex-between">
+                <span class="card-title" style="margin-bottom:0;">📋 词库管理</span>
+                <span id="dictSize" class="badge">0 词</span>
+            </div>
+            <div class="flex mt-12">
+                <input type="text" id="dictSearch" placeholder="搜索单词..." style="flex:1; max-width:300px;" />
+                <button class="outline" id="btnDictSearch">搜索</button>
+                <button class="outline" id="btnDictReset">显示全部</button>
+            </div>
+            <div class="word-list mt-12" id="dictList"><div class="text-muted text-center" style="padding:20px 0;">加载词库中...</div></div>
+        </div>
+        <div class="card mt-20">
+            <div class="card-title">➕ 手动添加单词</div>
+            <div class="flex">
+                <input type="text" id="manualWord" placeholder="英文单词" style="flex:1; max-width:200px;" />
+                <input type="text" id="manualMeaning" placeholder="中文释义" style="flex:2; max-width:350px;" />
+                <button class="success" id="btnManualAdd">添加</button>
+            </div>
+            <div class="mt-12 text-sm text-muted" id="manualResult"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ================================================================
+//  存储层（支持 localStorage / 内存降级）
+// ================================================================
+let useLocalStorage = true;
+let memoryStore = {};
+
+function getStorage() {
+    try {
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('__test__', '1');
+            localStorage.removeItem('__test__');
+            return localStorage;
+        }
+    } catch(e) {
+        document.getElementById('storageWarning').classList.add('show');
+        useLocalStorage = false;
+        return null;
+    }
+    document.getElementById('storageWarning').classList.add('show');
+    useLocalStorage = false;
+    return null;
+}
+
+function saveToStorage(key, data) {
+    if (useLocalStorage) {
+        try { localStorage.setItem(key, JSON.stringify(data)); }
+        catch(e) { useLocalStorage = false; document.getElementById('storageWarning').classList.add('show'); memoryStore[key] = data; }
+    } else {
+        memoryStore[key] = data;
+    }
+}
+
+function loadFromStorage(key) {
+    if (useLocalStorage) {
+        try {
+            const raw = localStorage.getItem(key);
+            if (raw) return JSON.parse(raw);
+        } catch(e) {
             useLocalStorage = false;
-            return null;
+            document.getElementById('storageWarning').classList.add('show');
+            return memoryStore[key] || null;
         }
+        return null;
+    } else {
+        return memoryStore[key] || null;
+    }
+}
 
-        function saveToStorage(key, data) {
-            if (useLocalStorage) {
-                try {
-                    localStorage.setItem(key, JSON.stringify(data));
-                } catch (e) {
-                    console.warn('写入 localStorage 失败', e);
-                    useLocalStorage = false;
-                    document.getElementById('storageWarning').classList.add('show');
-                    memoryStore[key] = data;
-                }
-            } else {
-                memoryStore[key] = data;
-            }
+function removeFromStorage(key) {
+    if (useLocalStorage) {
+        try { localStorage.removeItem(key); }
+        catch(e) { delete memoryStore[key]; }
+    } else {
+        delete memoryStore[key];
+    }
+}
+
+// ================================================================
+//  数据管理
+// ================================================================
+const STORAGE_KEY = 'wordReviewApp';
+
+function loadData() {
+    const raw = loadFromStorage(STORAGE_KEY);
+    if (raw) {
+        if (!raw.books) raw.books = {};
+        if (!raw.records) raw.records = {};
+        if (!raw.settings) raw.settings = {};
+        if (!raw.plan) raw.plan = {};
+        if (!raw.dict) raw.dict = [];
+        return raw;
+    }
+    return { books: {}, records: {}, settings: {}, plan: {}, dict: [] };
+}
+
+function saveData(data) {
+    saveToStorage(STORAGE_KEY, data);
+}
+
+// ================================================================
+//  词库核心
+// ================================================================
+const FALLBACK_DICT = [
+    { word: "abandon", meaning: "离弃，丢弃；遗弃，抛弃；放弃" },
+    { word: "ability", meaning: "能力；本领；才能" },
+    { word: "able", meaning: "有能力的；能干的" },
+    { word: "abnormal", meaning: "反常的；异常的" },
+    { word: "aboard", meaning: "在船/飞机/车上；上船/飞机/车" },
+    { word: "abolish", meaning: "废除；废止" },
+    { word: "abound", meaning: "大量存在；富于" },
+    { word: "about", meaning: "关于；大约；在…周围" },
+    { word: "above", meaning: "在…上方；超过" },
+    { word: "abroad", meaning: "到国外；在国外" },
+    { word: "abrupt", meaning: "突然的；唐突的" },
+    { word: "absence", meaning: "缺席；缺乏" },
+    { word: "absent", meaning: "缺席的；缺乏的" },
+    { word: "absolute", meaning: "绝对的；完全的" },
+    { word: "absorb", meaning: "吸收；使专心" },
+    { word: "abstract", meaning: "抽象的；摘要" },
+    { word: "absurd", meaning: "荒谬的；可笑的" },
+    { word: "abundance", meaning: "丰富；充裕" },
+    { word: "abundant", meaning: "丰富的；充裕的" },
+    { word: "abuse", meaning: "滥用；虐待；辱骂" },
+];
+
+let dict = [];
+let dictLoaded = false;
+
+function updateDictStatus(status, msg) {
+    const badge = document.getElementById('dictStatusBadge');
+    if (!badge) return;
+    if (status === 'loading') {
+        badge.className = 'dict-status loading';
+        badge.innerHTML = `<span class="spinner"></span> 加载词库...`;
+    } else if (status === 'success') {
+        badge.className = 'dict-status success';
+        badge.innerHTML = `✅ 词库已加载 (${dict.length} 词)`;
+    } else {
+        badge.className = 'dict-status error';
+        badge.innerHTML = `⚠️ ${msg || '使用备用词库'}`;
+    }
+}
+
+function parseDictLine(line) {
+    line = line.trim();
+    if (!line) return null;
+    const patterns = [
+        /\{\s*word\s*:\s*["']([^"']+)["']\s*,\s*meaning\s*:\s*["']([^"']+)["']\s*\}/,
+        /\{\s*meaning\s*:\s*["']([^"']+)["']\s*,\s*word\s*:\s*["']([^"']+)["']\s*\}/,
+    ];
+    for (const p of patterns) {
+        const m = line.match(p);
+        if (m) {
+            if (p === patterns[1]) return { word: m[2].trim(), meaning: m[1].trim() };
+            return { word: m[1].trim(), meaning: m[2].trim() };
         }
+    }
+    const w = line.match(/word\s*:\s*["']([^"']+)["']/);
+    const me = line.match(/meaning\s*:\s*["']([^"']+)["']/);
+    if (w && me) return { word: w[1].trim(), meaning: me[1].trim() };
+    return null;
+}
 
-        function loadFromStorage(key) {
-            if (useLocalStorage) {
-                try {
-                    const raw = localStorage.getItem(key);
-                    if (raw) return JSON.parse(raw);
-                } catch (e) {
-                    console.warn('读取 localStorage 失败', e);
-                    useLocalStorage = false;
-                    document.getElementById('storageWarning').classList.add('show');
-                    return memoryStore[key] || null;
-                }
-                return null;
-            } else {
-                return memoryStore[key] || null;
-            }
+function loadDictFromText(text) {
+    const lines = text.split(/\n/);
+    const parsed = [];
+    for (const line of lines) {
+        const entry = parseDictLine(line);
+        if (entry && entry.word && entry.meaning) {
+            const exist = parsed.find(i => i.word.toLowerCase() === entry.word.toLowerCase());
+            if (!exist) parsed.push({ word: entry.word.trim(), meaning: entry.meaning.trim() });
         }
+    }
+    if (parsed.length === 0) throw new Error('未能解析出任何有效词条');
+    const data = loadData();
+    const userDict = data.dict || [];
+    const merged = [...parsed];
+    for (const item of userDict) {
+        const exist = merged.find(m => m.word.toLowerCase() === item.word.toLowerCase());
+        if (!exist) merged.push(item);
+        else exist.meaning = item.meaning;
+    }
+    dict = merged.sort((a,b) => a.word.localeCompare(b.word));
+    data.dict = dict;
+    saveData(data);
+    dictLoaded = true;
+    updateDictStatus('success');
+    return dict;
+}
 
-        function removeFromStorage(key) {
-            if (useLocalStorage) {
-                try {
-                    localStorage.removeItem(key);
-                } catch (e) {
-                    console.warn('删除 localStorage 失败', e);
-                    delete memoryStore[key];
-                }
-            } else {
-                delete memoryStore[key];
-            }
-        }
+function initDict() {
+    const data = loadData();
+    if (data.dict && data.dict.length > 0) {
+        dict = data.dict.sort((a,b) => a.word.localeCompare(b.word));
+        dictLoaded = true;
+        updateDictStatus('success');
+    } else {
+        dict = [...FALLBACK_DICT].sort((a,b) => a.word.localeCompare(b.word));
+        data.dict = dict;
+        saveData(data);
+        dictLoaded = true;
+        updateDictStatus('success');
+    }
+    renderDict();
+    renderBooks();
+    updateQuizUI();
+    updatePlanInfo();
+    return dict;
+}
 
-        // ================================================================
-        //  1. 数据管理（基于存储层）
-        // ================================================================
-        const STORAGE_KEY = 'wordReviewApp';
-
-        function loadData() {
-            const raw = loadFromStorage(STORAGE_KEY);
-            if (raw) {
-                if (!raw.books) raw.books = {};
-                if (!raw.records) raw.records = {};
-                if (!raw.settings) raw.settings = {};
-                if (!raw.plan) raw.plan = {};
-                if (!raw.dict) raw.dict = [];
-                return raw;
-            }
-            return { books: {}, records: {}, settings: {}, plan: {}, dict: [] };
-        }
-
-        function saveData(data) {
-            saveToStorage(STORAGE_KEY, data);
-        }
-
-        // ================================================================
-        //  2. 备用词库（硬编码）
-        // ================================================================
-        const FALLBACK_DICT = [
-            { word: "abandon", meaning: "离弃，丢弃；遗弃，抛弃；放弃" },
-            { word: "ability", meaning: "能力；本领；才能" },
-            { word: "able", meaning: "有能力的；能干的" },
-            { word: "abnormal", meaning: "反常的；异常的" },
-            { word: "aboard", meaning: "在船/飞机/车上；上船/飞机/车" },
-            { word: "abolish", meaning: "废除；废止" },
-            { word: "abound", meaning: "大量存在；富于" },
-            { word: "about", meaning: "关于；大约；在…周围" },
-            { word: "above", meaning: "在…上方；超过" },
-            { word: "abroad", meaning: "到国外；在国外" },
-            { word: "abrupt", meaning: "突然的；唐突的" },
-            { word: "absence", meaning: "缺席；缺乏" },
-            { word: "absent", meaning: "缺席的；缺乏的" },
-            { word: "absolute", meaning: "绝对的；完全的" },
-            { word: "absorb", meaning: "吸收；使专心" },
-            { word: "abstract", meaning: "抽象的；摘要" },
-            { word: "absurd", meaning: "荒谬的；可笑的" },
-            { word: "abundance", meaning: "丰富；充裕" },
-            { word: "abundant", meaning: "丰富的；充裕的" },
-            { word: "abuse", meaning: "滥用；虐待；辱骂" },
-        ];
-
-        // ================================================================
-        //  3. 词库核心
-        // ================================================================
-        let dict = [];
-        let dictLoaded = false;
-
-        function updateDictStatus(status, msg) {
-            const badge = document.getElementById('dictStatusBadge');
-            if (!badge) return;
-            if (status === 'loading') {
-                badge.className = 'dict-status loading';
-                badge.innerHTML = `<span class="spinner"></span> 加载词库...`;
-            } else if (status === 'success') {
-                badge.className = 'dict-status success';
-                badge.innerHTML = `✅ 词库已加载 (${dict.length} 词)`;
-            } else if (status === 'error') {
-                badge.className = 'dict-status error';
-                badge.innerHTML = `⚠️ ${msg || '词库加载失败，使用备用词库'}`;
-            }
-        }
-
-        function parseDictLine(line) {
-            line = line.trim();
-            if (!line) return null;
-            const patterns = [
-                /\{\s*word\s*:\s*["']([^"']+)["']\s*,\s*meaning\s*:\s*["']([^"']+)["']\s*\}/,
-                /\{\s*meaning\s*:\s*["']([^"']+)["']\s*,\s*word\s*:\s*["']([^"']+)["']\s*\}/,
-                /\{\s*word\s*:\s*["']([^"']+)["']\s*,\s*meaning\s*:\s*["']([^"']+)["']\s*\}/,
-            ];
-            for (const pattern of patterns) {
-                const match = line.match(pattern);
-                if (match) {
-                    if (pattern === patterns[1]) {
-                        return { word: match[2].trim(), meaning: match[1].trim() };
-                    }
-                    return { word: match[1].trim(), meaning: match[2].trim() };
-                }
-            }
-            const wordMatch = line.match(/word\s*:\s*["']([^"']+)["']/);
-            const meaningMatch = line.match(/meaning\s*:\s*["']([^"']+)["']/);
-            if (wordMatch && meaningMatch) {
-                return { word: wordMatch[1].trim(), meaning: meaningMatch[1].trim() };
-            }
-            return null;
-        }
-
-        function loadDictFromText(text) {
-            const lines = text.split(/\n/);
-            const parsed = [];
-            let validCount = 0;
-            for (const line of lines) {
-                const entry = parseDictLine(line);
-                if (entry && entry.word && entry.meaning) {
-                    const exist = parsed.find(item => item.word.toLowerCase() === entry.word.toLowerCase());
-                    if (!exist) {
-                        parsed.push({ word: entry.word.trim(), meaning: entry.meaning.trim() });
-                        validCount++;
-                    }
-                }
-            }
-            if (validCount === 0) {
-                throw new Error('未能解析出任何有效词条，请检查文件格式');
-            }
-            // 合并用户自定义词库
-            const data = loadData();
-            const userDict = data.dict || [];
-            const merged = [...parsed];
-            for (const item of userDict) {
-                const exist = merged.find(m => m.word.toLowerCase() === item.word.toLowerCase());
-                if (!exist) {
-                    merged.push(item);
-                } else {
-                    exist.meaning = item.meaning;
-                }
-            }
-            dict = merged.sort((a, b) => a.word.localeCompare(b.word));
-            data.dict = dict;
-            saveData(data);
-            dictLoaded = true;
-            updateDictStatus('success', `已加载 ${dict.length} 个词条`);
-            return dict;
-        }
-
-        function initDict() {
-            const data = loadData();
-            if (data.dict && data.dict.length > 0) {
-                dict = data.dict.sort((a, b) => a.word.localeCompare(b.word));
-                dictLoaded = true;
-                updateDictStatus('success', `已加载 ${dict.length} 个词条`);
-            } else {
-                dict = [...FALLBACK_DICT].sort((a, b) => a.word.localeCompare(b.word));
-                data.dict = dict;
-                saveData(data);
-                dictLoaded = true;
-                updateDictStatus('success', `备用词库 (${dict.length} 词)`);
-            }
+function loadDictFromFile(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const text = new TextDecoder('utf-8').decode(e.target.result);
+            loadDictFromText(text);
+            document.getElementById('dictLoadResult').innerHTML =
+                `<span class="text-success">✅ 词库加载成功，共 ${dict.length} 个词条</span>`;
+            showToast(`✅ 词库已更新 (${dict.length} 词)`, 'success');
             renderDict();
             renderBooks();
             updateQuizUI();
-            updatePlanInfo();
-            return dict;
+        } catch(err) {
+            document.getElementById('dictLoadResult').innerHTML =
+                `<span class="text-danger">❌ 加载失败: ${err.message}</span>`;
+            showToast('❌ 词库加载失败，请检查文件格式', 'error');
         }
+    };
+    reader.readAsArrayBuffer(file);
+}
 
-        function loadDictFromFile(file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                try {
-                    // 强制以 UTF-8 读取
-                    const text = new TextDecoder('utf-8').decode(event.target.result);
-                    loadDictFromText(text);
-                    document.getElementById('dictLoadResult').innerHTML =
-                        `<span class="text-success">✅ 词库加载成功，共 ${dict.length} 个词条</span>`;
-                    showToast(`✅ 词库已更新 (${dict.length} 词)`, 'success');
-                    renderDict();
-                    renderBooks();
-                    updateQuizUI();
-                } catch (err) {
-                    document.getElementById('dictLoadResult').innerHTML =
-                        `<span class="text-danger">❌ 加载失败: ${err.message}</span>`;
-                    showToast('❌ 词库加载失败，请检查文件格式', 'error');
-                }
-            };
-            reader.onerror = function() {
-                document.getElementById('dictLoadResult').innerHTML =
-                    `<span class="text-danger">❌ 读取文件失败</span>`;
-                showToast('❌ 读取文件失败', 'error');
-            };
-            reader.readAsArrayBuffer(file);
-        }
+function lookupMeaning(word) {
+    const w = word.trim().toLowerCase();
+    const found = dict.find(item => item.word.toLowerCase() === w);
+    return found ? found.meaning : null;
+}
 
-        function lookupMeaning(word) {
-            const w = word.trim().toLowerCase();
-            const found = dict.find(item => item.word.toLowerCase() === w);
-            return found ? found.meaning : null;
-        }
+// ================================================================
+//  单词本
+// ================================================================
+function getTodayKey() { return new Date().toISOString().slice(0,10); }
+function getBookNames() { const data = loadData(); return Object.keys(data.books).sort(); }
+function getBookWords(bookKey) { const data = loadData(); return data.books[bookKey] || []; }
+function addWordsToBook(bookKey, words) {
+    const data = loadData();
+    if (!data.books[bookKey]) data.books[bookKey] = [];
+    const existing = new Set(data.books[bookKey].map(w => w.toLowerCase()));
+    const newWords = words.filter(w => !existing.has(w.toLowerCase()));
+    data.books[bookKey] = data.books[bookKey].concat(newWords);
+    saveData(data);
+    return newWords.length;
+}
+function removeBook(key) { const data = loadData(); delete data.books[key]; saveData(data); }
+function clearAllBooks() { const data = loadData(); data.books = {}; saveData(data); }
 
-        // ================================================================
-        //  4. 单词本管理
-        // ================================================================
-        function getTodayKey() { return new Date().toISOString().slice(0, 10); }
-        function getBookNames() { const data = loadData(); return Object.keys(data.books).sort(); }
-        function getBookWords(bookKey) { const data = loadData(); return data.books[bookKey] || []; }
-        function addWordsToBook(bookKey, words) {
-            const data = loadData();
-            if (!data.books[bookKey]) data.books[bookKey] = [];
-            const existing = new Set(data.books[bookKey].map(w => w.toLowerCase()));
-            const newWords = words.filter(w => !existing.has(w.toLowerCase()));
-            data.books[bookKey] = data.books[bookKey].concat(newWords);
-            saveData(data);
-            return newWords.length;
-        }
-        function removeBook(bookKey) { const data = loadData(); delete data.books[bookKey]; saveData(data); }
-        function clearAllBooks() { const data = loadData(); data.books = {}; saveData(data); }
+// ================================================================
+//  记录
+// ================================================================
+function getRecord(word, dateKey) {
+    const data = loadData();
+    if (!data.records[word]) data.records[word] = {};
+    if (!data.records[word][dateKey]) data.records[word][dateKey] = { correct: 0, wrong: 0 };
+    return data.records[word][dateKey];
+}
+function updateRecord(word, dateKey, correct, wrong) {
+    const data = loadData();
+    if (!data.records[word]) data.records[word] = {};
+    if (!data.records[word][dateKey]) data.records[word][dateKey] = { correct: 0, wrong: 0 };
+    data.records[word][dateKey].correct += correct;
+    data.records[word][dateKey].wrong += wrong;
+    saveData(data);
+}
 
-        // ================================================================
-        //  5. 记录与计划
-        // ================================================================
-        function getRecord(word, dateKey) {
-            const data = loadData();
-            if (!data.records[word]) data.records[word] = {};
-            if (!data.records[word][dateKey]) data.records[word][dateKey] = { correct: 0, wrong: 0 };
-            return data.records[word][dateKey];
-        }
-        function updateRecord(word, dateKey, correct, wrong) {
-            const data = loadData();
-            if (!data.records[word]) data.records[word] = {};
-            if (!data.records[word][dateKey]) data.records[word][dateKey] = { correct: 0, wrong: 0 };
-            data.records[word][dateKey].correct += correct;
-            data.records[word][dateKey].wrong += wrong;
-            saveData(data);
-        }
-        function getPlan() { const data = loadData(); if (!data.plan) data.plan = {}; return data.plan; }
-        function updatePlan(planData) { const data = loadData(); data.plan = { ...data.plan, ...planData }; saveData(data); }
+// ================================================================
+//  计划（新逻辑）
+// ================================================================
+function getPlan() { const data = loadData(); if (!data.plan) data.plan = {}; return data.plan; }
+function updatePlan(planData) { const data = loadData(); data.plan = { ...data.plan, ...planData }; saveData(data); }
 
-        // ================================================================
-        //  6. 状态
-        // ================================================================
-        const state = {
-            currentBook: null,
-            currentWords: [],
-            quizIndex: 0,
-            quizCorrect: 0,
-            quizWrong: 0,
-            quizTotal: 0,
-            isQuizActive: false,
-            isAnswering: false,
-            currentWord: null,
-            planActive: false,
-        };
+// ================================================================
+//  状态
+// ================================================================
+const state = {
+    currentBook: null,
+    currentWords: [],          // 当前词本所有单词（用于生成队列）
+    wordQueue: [],             // 当前待复习队列（元素为单词字符串）
+    quizCorrect: 0,
+    quizWrong: 0,
+    isQuizActive: false,
+    isAnswering: false,
+    currentWord: null,         // 当前显示的单词
+};
 
-        // ================================================================
-        //  7. 工具
-        // ================================================================
-        const $ = id => document.getElementById(id);
-        function showToast(msg, type = 'info') {
-            const old = document.querySelector('.toast');
-            if (old) old.remove();
-            const div = document.createElement('div');
-            div.className = 'toast ' + type;
-            div.textContent = msg;
-            document.body.appendChild(div);
-            setTimeout(() => div.remove(), 3500);
-        }
-        function shuffleArray(arr) {
-            for (let i = arr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [arr[i], arr[j]] = [arr[j], arr[i]];
-            }
-            return arr;
-        }
-        function isEnglishWord(str) {
-            return /^[a-zA-Z\-']+$/.test(str.trim());
-        }
+// ================================================================
+//  工具
+// ================================================================
+const $ = id => document.getElementById(id);
+function showToast(msg, type='info') {
+    const old = document.querySelector('.toast');
+    if (old) old.remove();
+    const div = document.createElement('div');
+    div.className = 'toast ' + type;
+    div.textContent = msg;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3500);
+}
+function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+function isEnglishWord(str) { return /^[a-zA-Z\-']+$/.test(str.trim()); }
 
-        // ================================================================
-        //  8. 背诵逻辑
-        // ================================================================
-        function startQuiz() {
-            if (!state.currentBook || state.currentWords.length === 0) {
-                showToast('请先选择一个包含单词的单词本', 'error');
-                return;
-            }
-            state.quizIndex = 0;
-            state.quizCorrect = 0;
-            state.quizWrong = 0;
-            state.quizTotal = state.currentWords.length;
-            state.isQuizActive = true;
-            state.isAnswering = false;
-            state.planActive = false;
-            state.currentWords = shuffleArray([...state.currentWords]);
+// ================================================================
+//  背诵核心
+// ================================================================
+function startQuiz() {
+    if (!state.currentBook || state.currentWords.length === 0) {
+        showToast('请先选择一个包含单词的单词本', 'error');
+        return;
+    }
+    // 检查计划状态
+    const plan = getPlan();
+    if (!plan.active || plan.dayIndex >= plan.totalDays) {
+        showToast('请先点击 "开始今日复习" 启动计划', 'error');
+        return;
+    }
+    // 如果队列为空，说明当天已完成
+    if (plan.wordQueue && plan.wordQueue.length === 0) {
+        // 检查是否所有天都完成了
+        if (plan.dayIndex >= plan.totalDays) {
+            showToast('🎉 所有复习计划已完成！', 'success');
+            return;
+        } else {
+            // 当天已完成，自动进入下一天
+            showToast('✅ 今日复习已完成，进入下一天！', 'success');
+            // 生成下一天队列
+            generateDailyQueue();
             updateQuizUI();
             renderQuizQuestion();
+            return;
         }
+    }
+    // 有未完成的队列
+    state.wordQueue = plan.wordQueue || [];
+    state.quizCorrect = 0;
+    state.quizWrong = 0;
+    state.isQuizActive = true;
+    state.isAnswering = false;
+    // 从队列第一个开始
+    renderQuizQuestion();
+    updateQuizUI();
+}
 
-        function renderQuizQuestion() {
-            const container = $('quizOptions');
-            const wordEl = $('quizWord');
-            const progressEl = $('quizProgress');
-            const correctEl = $('quizCorrect');
-            const wrongEl = $('quizWrong');
-            const remainEl = $('quizRemain');
-            if (!state.isQuizActive || state.quizIndex >= state.currentWords.length) {
-                state.isQuizActive = false;
-                wordEl.textContent = '🎉 完成！';
-                container.innerHTML = '';
-                progressEl.textContent = `已完成全部 ${state.quizTotal} 个单词`;
-                correctEl.textContent = state.quizCorrect;
-                wrongEl.textContent = state.quizWrong;
-                remainEl.textContent = '0';
-                return;
+function generateDailyQueue() {
+    const plan = getPlan();
+    const dailyTimes = parseInt($('setTimesPerDay').value) || 3;
+    const words = state.currentWords;
+    if (words.length === 0) {
+        showToast('当前词本没有单词', 'error');
+        return;
+    }
+    // 每个单词重复 dailyTimes 次
+    let queue = [];
+    for (let i = 0; i < dailyTimes; i++) {
+        queue = queue.concat(words);
+    }
+    shuffleArray(queue);
+    plan.wordQueue = queue;
+    // 更新当天索引（如果从第0天开始，dayIndex 为0表示第1天）
+    if (!plan.dayIndex && plan.dayIndex !== 0) plan.dayIndex = 0;
+    // 确保计划活跃
+    plan.active = true;
+    updatePlan(plan);
+    state.wordQueue = queue;
+}
+
+function renderQuizQuestion() {
+    const container = $('quizOptions');
+    const wordEl = $('quizWord');
+    const progressEl = $('quizProgress');
+    const correctEl = $('quizCorrect');
+    const wrongEl = $('quizWrong');
+    const remainEl = $('quizRemain');
+
+    const plan = getPlan();
+    const queue = plan.wordQueue || [];
+
+    // 如果队列为空，表示当天完成
+    if (queue.length === 0) {
+        state.isQuizActive = false;
+        wordEl.textContent = '🎉 今日复习完成！';
+        container.innerHTML = '';
+        progressEl.textContent = '剩余 0 个';
+        correctEl.textContent = state.quizCorrect;
+        wrongEl.textContent = state.quizWrong;
+        remainEl.textContent = '0';
+        // 增加一天
+        plan.dayIndex = (plan.dayIndex || 0) + 1;
+        if (plan.dayIndex >= plan.totalDays) {
+            plan.active = false;
+            showToast('🎉 所有复习计划已完成！', 'success');
+        } else {
+            // 自动生成下一天队列（但让用户手动点击“开始今日复习”来生成下一天）
+            plan.wordQueue = [];
+        }
+        updatePlan(plan);
+        updatePlanInfo();
+        return;
+    }
+
+    // 取队列第一个作为当前单词
+    const word = queue[0];
+    state.currentWord = word;
+    const meaning = lookupMeaning(word);
+    if (!meaning) {
+        // 如果词库没有该单词，跳过
+        queue.shift();
+        updatePlan(plan);
+        renderQuizQuestion();
+        return;
+    }
+
+    // 生成选项
+    const allMeanings = dict.map(item => item.meaning).filter(m => m !== meaning);
+    const shuffled = shuffleArray([...allMeanings]);
+    const options = [meaning];
+    for (let i = 0; i < 3 && i < shuffled.length; i++) options.push(shuffled[i]);
+    while (options.length < 4) options.push('—');
+    const finalOptions = shuffleArray(options);
+
+    wordEl.textContent = word;
+    const total = queue.length;
+    progressEl.textContent = `剩余 ${total} 个单词`;
+    // 正确/错误累计显示（从记录中读取今日数据）
+    const today = getTodayKey();
+    const rec = getRecord(word, today);
+    // 但我们要累计所有单词的正确/错误，可以遍历queue中所有单词求和？也可以简单显示当次复习的累计，我们通过state.quizCorrect和state.quizWrong累加
+    correctEl.textContent = state.quizCorrect;
+    wrongEl.textContent = state.quizWrong;
+    remainEl.textContent = total - 1;
+
+    container.innerHTML = '';
+    state.isAnswering = false;
+
+    finalOptions.forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.textContent = opt || '—';
+        btn.dataset.meaning = opt;
+        btn.addEventListener('click', function() {
+            if (state.isAnswering) return;
+            const selected = this.dataset.meaning;
+            const isCorrect = selected === meaning;
+            const allBtns = document.querySelectorAll('#quizOptions button');
+
+            if (isCorrect) {
+                // 正确：从队列移除该单词，正确计数+1
+                state.isAnswering = true;
+                allBtns.forEach(b => b.disabled = true);
+                this.classList.add('correct');
+                state.quizCorrect++;
+                // 记录正确
+                updateRecord(word, getTodayKey(), 1, 0);
+                // 从队列头部移除
+                queue.shift();
+                updatePlan(plan);
+                showToast('✅ 正确！', 'success');
+                setTimeout(() => {
+                    state.isAnswering = false;
+                    renderQuizQuestion();
+                }, 500);
+            } else {
+                // 错误：错误计数+1，单词移到队列末尾（保持头部不变？不，我们要保留当前单词在头部，让用户继续选）
+                // 所以只记录错误，并刷新选项（让用户重新选）
+                this.classList.add('wrong');
+                this.disabled = true;
+                state.quizWrong++;
+                updateRecord(word, getTodayKey(), 0, 1);
+                // 显示正确选项（但不禁用所有，让用户继续选）
+                allBtns.forEach(b => {
+                    if (b.dataset.meaning === meaning && !b.disabled) {
+                        b.classList.add('reveal-correct');
+                    }
+                });
+                // 但注意：我们并没有移动单词，所以当前单词仍在头部，用户需要继续选择直到正确
+                // 这里不调用 renderQuizQuestion，保留当前选项，但错误选项已禁用，正确选项高亮
+                // 但我们需要让用户继续点击其他选项，所以不设置 state.isAnswering = true，只禁用当前错误按钮
+                // 但已经禁用了错误按钮，其他未禁用的按钮仍可点击
+                // 然而，如果用户再次点击错误选项，会再次触发错误逻辑，可能造成重复记录。所以我们可以只允许点击一次错误选项？但用户可能再次点击其他错误选项，我们应防止再次记录错误？实际上我们希望用户一旦选错，该次机会就算错误，不能再继续选，必须选对才能继续，但错误已经记录，所以我们可以让用户继续选择直到正确，但错误次数只记一次。
+                // 修改：如果已经选错，我们禁用所有选项，只允许点击正确选项？但这样用户无法继续。不如这样：错误后，所有选项仍然可点（但错误选项已经变红并禁用），用户只有点击正确选项才能前进。
+                // 所以我们不禁用所有，只禁用错误按钮，让用户继续点击其他按钮。但我们不能再记录错误了，因为错误已记录。所以需要设置一个标志，防止重复记录。
+                // 更简单：一旦错误，我们设置 state.isAnswering = true，然后显示提示，让用户必须点击正确选项才能继续？但那样用户不能点其他错误选项。
+                // 根据需求：“对于选错的单词给出颜色提示选错，然后需要一直到选对才能进入下一个单词”，意味着选错后，用户必须继续选择同一个单词，直到选对，但错误次数只记录一次。所以我们可以这样做：
+                // 错误后，禁用所有按钮，但让用户看到正确选项（高亮），然后用户需要点击正确选项（或者我们提供一个“继续”按钮？）但更符合习惯的是，错误后只显示正确选项，并允许用户点击正确选项来继续。
+                // 所以，错误后，我们禁用所有按钮，然后显示正确选项，用户点击正确选项即表示他知道了，然后继续。
+                // 因此，我们错误后，禁用所有按钮，并标记正确选项，然后等待用户点击正确选项。
+                // 但正确选项可能被用户点击，我们检测到点击正确选项时，执行正确逻辑。
+                // 所以我们需要在错误处理后，监听正确选项的点击。
+                // 但我们已经用事件监听绑定了，正确选项也会触发点击事件，所以我们可以在错误处理中设置一个标志，让正确选项的点击事件执行正确逻辑，并且不再重复记录错误。
+
+                // 实现方案：错误后，我们将所有按钮 disabled = true，但正确选项设为可点击（disabled = false），并添加一个类提示。
+                // 然后当用户点击正确选项时，执行正确逻辑（移除单词，正确计数+1）。
+                // 但这样会重复执行正确逻辑，因为正确选项的点击事件已经被绑定了。
+                // 所以我们只需要在错误处理中，把正确选项设置为可用，并等待点击。
+
+                // 具体：
+                state.isAnswering = true;  // 禁止再次触发错误
+                allBtns.forEach(b => {
+                    if (b.dataset.meaning === meaning) {
+                        b.disabled = false; // 正确选项可点击
+                        b.classList.add('reveal-correct');
+                    } else {
+                        b.disabled = true;
+                    }
+                });
+                // 提示用户点击正确选项
+                showToast('❌ 错误，请点击正确释义', 'error');
+                // 但点击正确选项会触发正确逻辑，但我们需要保证正确逻辑只执行一次，并且不再记录错误。
+                // 我们不需要额外处理，因为正确逻辑会执行。
+                // 但注意：正确逻辑中会再次调用 updateRecord(word, today, 1, 0)，但之前的错误已经记录，所以正确累计。
+                // 正确逻辑也会移除队列头部。
+                // 所以我们只需在正确逻辑中，处理时判断如果已经错误过，则不再重复记录错误（但错误已经记录了）。
+                // 一切正常。
             }
-            const word = state.currentWords[state.quizIndex];
-            state.currentWord = word;
-            const meaning = lookupMeaning(word);
-            if (!meaning) {
-                state.quizIndex++;
-                renderQuizQuestion();
-                return;
-            }
-            const allMeanings = dict.map(item => item.meaning).filter(m => m !== meaning);
-            const shuffledMeanings = shuffleArray([...allMeanings]);
-            const options = [meaning];
-            for (let i = 0; i < 3 && i < shuffledMeanings.length; i++) {
-                options.push(shuffledMeanings[i]);
-            }
-            while (options.length < 4) options.push('—');
-            const finalOptions = shuffleArray(options);
-            wordEl.textContent = word;
-            progressEl.textContent = `第 ${state.quizIndex + 1} / ${state.currentWords.length} 个单词`;
+            // 更新显示数字
             correctEl.textContent = state.quizCorrect;
             wrongEl.textContent = state.quizWrong;
-            remainEl.textContent = state.currentWords.length - state.quizIndex - 1;
-            container.innerHTML = '';
-            state.isAnswering = false;
-            finalOptions.forEach((opt) => {
-                const btn = document.createElement('button');
-                btn.textContent = opt || '—';
-                btn.dataset.meaning = opt;
-                btn.addEventListener('click', function(e) {
-                    if (state.isAnswering) return;
-                    const selected = this.dataset.meaning;
-                    const isCorrect = selected === meaning;
-                    const allBtns = document.querySelectorAll('#quizOptions button');
-                    if (isCorrect) {
-                        state.isAnswering = true;
-                        allBtns.forEach(b => b.disabled = true);
-                        this.classList.add('correct');
-                        state.quizCorrect++;
-                        updateRecord(word, getTodayKey(), 1, 0);
-                        showToast('✅ 正确！', 'success');
-                        setTimeout(() => {
-                            state.quizIndex++;
-                            state.isAnswering = false;
-                            renderQuizQuestion();
-                        }, 600);
-                    } else {
-                        this.classList.add('wrong');
-                        this.disabled = true;
-                        state.quizWrong++;
-                        updateRecord(word, getTodayKey(), 0, 1);
-                        showToast('❌ 错误，请重新选择', 'error');
-                        allBtns.forEach(b => {
-                            if (b.dataset.meaning === meaning && !b.disabled) {
-                                b.classList.add('reveal-correct');
-                            }
-                        });
-                        allBtns.forEach(b => {
-                            if (!b.disabled && b.dataset.meaning !== meaning) {
-                                b.disabled = false;
-                            }
-                        });
-                    }
-                    $('quizCorrect').textContent = state.quizCorrect;
-                    $('quizWrong').textContent = state.quizWrong;
-                });
-                container.appendChild(btn);
-            });
-        }
+            remainEl.textContent = queue.length - 1; // 因为头部还未移除
+        });
+        container.appendChild(btn);
+    });
+}
 
-        function updateQuizUI() {
-            const empty = $('quizEmpty');
-            const active = $('quizActive');
-            const bookName = $('currentBookName');
-            if (state.currentBook) {
-                bookName.textContent = `当前词本：${state.currentBook} (${state.currentWords.length} 词)`;
+function updateQuizUI() {
+    const empty = $('quizEmpty');
+    const active = $('quizActive');
+    const bookName = $('currentBookName');
+    if (state.currentBook) {
+        bookName.textContent = `当前词本：${state.currentBook} (${state.currentWords.length} 词)`;
+    } else {
+        bookName.textContent = '当前词本：未选择';
+    }
+    const plan = getPlan();
+    const queue = plan.wordQueue || [];
+    if (state.currentBook && state.currentWords.length > 0 && plan.active && plan.dayIndex < plan.totalDays) {
+        empty.classList.add('hidden');
+        active.classList.remove('hidden');
+        if (!state.isQuizActive) {
+            // 如果队列非空，直接开始
+            if (queue.length > 0) {
+                state.isQuizActive = true;
+                renderQuizQuestion();
             } else {
-                bookName.textContent = '当前词本：未选择';
+                // 队列为空，但计划未完成，显示提示
+                $('quizWord').textContent = '📖 今日已完成';
+                $('quizOptions').innerHTML = '';
+                $('quizProgress').textContent = '剩余 0 个';
+                $('quizCorrect').textContent = '0';
+                $('quizWrong').textContent = '0';
+                $('quizRemain').textContent = '0';
             }
-            if (state.currentBook && state.currentWords.length > 0) {
-                empty.classList.add('hidden');
-                active.classList.remove('hidden');
-                if (!state.isQuizActive) {
-                    $('quizWord').textContent = '📖 准备开始';
-                    $('quizOptions').innerHTML = '';
-                    $('quizProgress').textContent = `共 ${state.currentWords.length} 个单词`;
-                    $('quizCorrect').textContent = '0';
-                    $('quizWrong').textContent = '0';
-                    $('quizRemain').textContent = state.currentWords.length;
-                } else {
-                    renderQuizQuestion();
-                }
-            } else {
-                empty.classList.remove('hidden');
-                active.classList.add('hidden');
-            }
-            updatePlanInfo();
-        }
-
-        // ================================================================
-        //  9. 计划
-        // ================================================================
-        function updatePlanInfo() {
-            const plan = getPlan();
-            const infoEl = $('planInfo');
-            const detailEl = $('planDetail');
-            const timesPerDay = parseInt($('setTimesPerDay')?.value) || 10;
-            const totalDays = parseInt($('setTotalDays')?.value) || 7;
-            if (plan.active) {
-                const progress = plan.dayIndex || 0;
-                const total = plan.totalDays || totalDays;
-                infoEl.textContent = `📅 第 ${progress + 1}/${total} 天 · 今日 ${plan.todayCount || 0}/${timesPerDay} 词`;
-                detailEl.textContent = `总进度: ${Math.round((progress / total) * 100)}% · 剩余 ${total - progress - 1} 天`;
-            } else {
-                infoEl.textContent = '未开始 · 每日 ' + timesPerDay + ' 词，共 ' + totalDays + ' 天';
-                detailEl.textContent = '点击 "开始今日复习" 启动计划';
-            }
-        }
-
-        $('btnStartPlan')?.addEventListener('click', function() {
-            if (!state.currentBook || state.currentWords.length === 0) {
-                showToast('请先选择一个包含单词的单词本', 'error');
-                return;
-            }
-            const timesPerDay = parseInt($('setTimesPerDay')?.value) || 10;
-            const totalDays = parseInt($('setTotalDays')?.value) || 7;
-            const today = getTodayKey();
-            const allWords = state.currentWords;
-            const wordScores = allWords.map(word => {
-                const rec = getRecord(word, today);
-                return { word, score: rec.wrong - rec.correct };
-            });
-            wordScores.sort((a, b) => b.score - a.score);
-            const todayWords = wordScores.slice(0, timesPerDay).map(item => item.word);
-            if (todayWords.length === 0) {
-                showToast('今日所有单词已完成！', 'success');
-                return;
-            }
-            const plan = {
-                active: true,
-                startDate: today,
-                totalDays: totalDays,
-                dayIndex: 0,
-                todayCount: 0,
-                wordQueue: todayWords,
-                wordIndex: 0,
-                timesPerDay: timesPerDay,
-                completed: false
-            };
-            updatePlan(plan);
-            state.planActive = true;
-            state.currentWords = shuffleArray([...todayWords]);
-            state.quizIndex = 0;
-            state.quizCorrect = 0;
-            state.quizWrong = 0;
-            state.quizTotal = state.currentWords.length;
-            state.isQuizActive = true;
-            state.isAnswering = false;
-            updateQuizUI();
+        } else {
             renderQuizQuestion();
-            updatePlanInfo();
-            showToast(`📅 今日复习 ${todayWords.length} 个单词`, 'success');
-        });
-
-        $('btnResetPlan')?.addEventListener('click', function() {
-            if (!confirm('确定要重置复习计划进度吗？')) return;
-            updatePlan({ active: false, dayIndex: 0, todayCount: 0 });
-            state.planActive = false;
-            updatePlanInfo();
-            showToast('已重置计划', 'success');
-        });
-
-        $('btnResetQuiz')?.addEventListener('click', function() {
-            if (state.isQuizActive) {
-                startQuiz();
-            } else {
-                if (state.currentBook && state.currentWords.length > 0) {
-                    startQuiz();
-                } else {
-                    showToast('请先选择单词本', 'error');
-                }
-            }
-        });
-
-        // ================================================================
-        //  10. 导入功能
-        // ================================================================
-        // 上传词库文件
-        document.getElementById('fileInputDict')?.addEventListener('change', function(e) {
-            const file = this.files[0];
-            if (!file) return;
-            loadDictFromFile(file);
-            this.value = '';
-        });
-
-        // 上传单词列表文件（自动识别编码）
-        document.getElementById('fileInputTxt')?.addEventListener('change', function(e) {
-            const file = this.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const buffer = event.target.result;
-                let text = new TextDecoder('utf-8').decode(buffer);
-                if (text.includes('�')) {
-                    text = new TextDecoder('gbk').decode(buffer);
-                }
-                document.getElementById('importText').value = text;
-                showToast('文件内容已加载，请点击"导入单词"', 'success');
-            };
-            reader.readAsArrayBuffer(file);
-            this.value = '';
-        });
-
-        document.getElementById('fileInputPdf')?.addEventListener('change', function(e) {
-            const file = this.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const buffer = event.target.result;
-                let text = new TextDecoder('utf-8').decode(buffer);
-                if (text.includes('�')) {
-                    text = new TextDecoder('gbk').decode(buffer);
-                }
-                document.getElementById('importPdfText').value = text;
-                showToast('文件内容已加载，请点击"解析并导入词库"', 'success');
-            };
-            reader.readAsArrayBuffer(file);
-            this.value = '';
-        });
-
-        // 导入纯单词列表
-        $('btnImportTxt')?.addEventListener('click', function() {
-            const text = $('importText').value.trim();
-            if (!text) { showToast('请粘贴单词列表或上传文件', 'error'); return; }
-            const lines = text.split(/\n/).map(s => s.trim()).filter(s => s.length > 0);
-            if (lines.length === 0) { showToast('没有有效的单词', 'error'); return; }
-            const unknown = [];
-            const known = [];
-            lines.forEach(word => {
-                const meaning = lookupMeaning(word);
-                if (meaning) known.push({ word, meaning });
-                else unknown.push(word);
-            });
-            if (known.length === 0) {
-                showToast('⚠️ 所有单词均未在词库中找到，请先导入词库', 'error');
-                $('importResult').innerHTML = `<span style="color:#b91c1c;">未找到匹配: ${unknown.join(', ')}</span>`;
-                return;
-            }
-            const today = getTodayKey();
-            const wordsToAdd = known.map(item => item.word);
-            const added = addWordsToBook(today, wordsToAdd);
-            let msg = `✅ 成功导入 ${added} 个单词到 "${today}" 单词本`;
-            if (unknown.length > 0) msg += `，${unknown.length} 个未匹配: ${unknown.join(', ')}`;
-            showToast(msg, 'success');
-            $('importResult').innerHTML = msg;
-            $('importText').value = '';
-            renderBooks();
-            updateQuizUI();
-        });
-
-        $('btnClearImport')?.addEventListener('click', function() {
-            $('importText').value = '';
-            $('importResult').innerHTML = '';
-        });
-
-        // 导入完整词库（粘贴）
-        $('btnImportPdf')?.addEventListener('click', function() {
-            const text = $('importPdfText').value.trim();
-            if (!text) { showToast('请粘贴考研大纲词库文本或上传文件', 'error'); return; }
-
-            const progressBar = $('importProgress');
-            const progressFill = $('importProgressFill');
-            progressBar.classList.remove('hidden');
-            progressFill.style.width = '0%';
-
-            const lines = text.split(/\n/).filter(s => s.trim().length > 0);
-            const totalLines = lines.length;
-            let processed = 0;
-            let parsed = 0;
-            let skipped = 0;
-            const newEntries = [];
-            const data = loadData();
-            if (!data.dict) data.dict = [];
-
-            const patterns = [
-                /^([a-zA-Z\-']+)\s*\/[^\/]+\/\s*(.+)/,
-                /^([a-zA-Z\-']+)\s+\[[^\]]+\]\s+(.+)/,
-                /^([a-zA-Z\-']+)\s+(.+)/,
-                /^([a-zA-Z\-']+)\/[^\/]+\/(.+)/
-            ];
-
-            function isValidWordLine(line) {
-                const firstChar = line.trim()[0];
-                if (!firstChar) return false;
-                if (/[0-9\u4e00-\u9fa5]/.test(firstChar)) return false;
-                return true;
-            }
-
-            for (let line of lines) {
-                line = line.trim();
-                if (!line) continue;
-                if (!isValidWordLine(line)) {
-                    skipped++;
-                    continue;
-                }
-                let matched = false;
-                for (let pattern of patterns) {
-                    const match = line.match(pattern);
-                    if (match) {
-                        let word = match[1].trim();
-                        let meaning = match[2].trim();
-                        if (/[\u4e00-\u9fa5]/.test(word)) continue;
-                        if (!meaning) continue;
-                        meaning = meaning.replace(/[.;,。，\s]+$/, '').trim();
-                        if (word && meaning) {
-                            const exist = data.dict.find(item => item.word.toLowerCase() === word.toLowerCase());
-                            if (exist) {
-                                exist.meaning = meaning;
-                            } else {
-                                data.dict.push({ word, meaning });
-                                newEntries.push(word);
-                            }
-                            parsed++;
-                            matched = true;
-                            break;
-                        }
-                    }
-                }
-                if (!matched) {
-                    const parts = line.split(/\s+/);
-                    if (parts.length >= 2) {
-                        const word = parts[0];
-                        const meaning = parts.slice(1).join(' ');
-                        if (isEnglishWord(word) && meaning.length > 0) {
-                            const exist = data.dict.find(item => item.word.toLowerCase() === word.toLowerCase());
-                            if (exist) {
-                                exist.meaning = meaning;
-                            } else {
-                                data.dict.push({ word, meaning });
-                                newEntries.push(word);
-                            }
-                            parsed++;
-                        } else {
-                            skipped++;
-                        }
-                    } else {
-                        skipped++;
-                    }
-                }
-                processed++;
-                const pct = Math.round((processed / totalLines) * 100);
-                progressFill.style.width = pct + '%';
-            }
-
-            saveData(data);
-            // 重新加载词库
-            dict = data.dict.sort((a, b) => a.word.localeCompare(b.word));
-            dictLoaded = true;
-            updateDictStatus('success', `已加载 ${dict.length} 个词条`);
-            renderDict();
-
-            setTimeout(() => {
-                progressBar.classList.add('hidden');
-            }, 500);
-
-            const resultDiv = $('importPdfResult');
-            if (parsed === 0) {
-                resultDiv.innerHTML =
-                    `<span class="text-danger">❌ 解析失败，未能识别任何单词。请检查格式（每行一个单词，如 "abandon /ə'bændən/ vt.放弃"）</span>`;
-                showToast('解析失败，请检查文本格式', 'error');
-            } else {
-                resultDiv.innerHTML = `
-                        <div class="text-success">✅ 成功解析并导入 <strong>${parsed}</strong> 个单词到词库</div>
-                        <div class="text-sm text-muted mt-12">新增/更新 ${newEntries.length} 个，跳过 ${skipped} 行（非单词行）</div>
-                        <div class="stats-grid">
-                            <div class="stat"><div class="num">${parsed}</div><div class="label">解析成功</div></div>
-                            <div class="stat"><div class="num">${newEntries.length}</div><div class="label">新增词条</div></div>
-                            <div class="stat"><div class="num">${skipped}</div><div class="label">跳过行</div></div>
-                        </div>
-                    `;
-                showToast(`✅ 词库已更新，导入 ${parsed} 个单词`, 'success');
-                $('importPdfText').value = '';
-                renderBooks();
-                updateQuizUI();
-            }
-        });
-
-        $('btnLoadSample')?.addEventListener('click', function() {
-            const sample = ['abandon', 'ability', 'able', 'abnormal', 'aboard', 'abolish', 'abound',
-                'about', 'above', 'abroad', 'abrupt', 'absence', 'absent', 'absolute', 'absorb',
-                'abstract', 'absurd', 'abundance', 'abundant', 'abuse', 'academic', 'academy',
-                'accelerate', 'accent', 'accept', 'acceptance', 'access', 'accessory', 'accident',
-                'accidental', 'acclaim', 'accommodate', 'accommodation', 'accompany', 'accomplish',
-                'accord', 'accordance', 'according', 'accordingly', 'account', 'accountant',
-                'accumulate', 'accuracy', 'accurate', 'accuse', 'accustom', 'ache', 'achieve'
-            ];
-            const today = getTodayKey();
-            const added = addWordsToBook(today, sample);
-            showToast(`✅ 已导入 ${added} 个示例单词到 "${today}"`, 'success');
-            renderBooks();
-            updateQuizUI();
-        });
-
-        // ================================================================
-        //  11. 单词本 UI
-        // ================================================================
-        function renderBooks() {
-            const container = $('bookList');
-            const books = getBookNames();
-            if (books.length === 0) {
-                container.innerHTML =
-                    `<div class="text-muted text-center" style="padding:40px 0;">📭 暂无单词本，请先导入单词</div>`;
-                return;
-            }
-            container.innerHTML = books.map(key => {
-                const words = getBookWords(key);
-                return `<div class="book-item">
-                        <div class="info">
-                            <span class="date">📂 ${key}</span>
-                            <span class="count">${words.length} 个单词</span>
-                            <span class="badge">${state.currentBook === key ? '当前' : ''}</span>
-                        </div>
-                        <div class="flex gap-8">
-                            <button class="primary" data-book="${key}" onclick="selectBook('${key}')">选择</button>
-                            <button class="danger outline" data-book="${key}" onclick="deleteBook('${key}')">删除</button>
-                        </div>
-                    </div>`;
-            }).join('');
         }
+    } else {
+        empty.classList.remove('hidden');
+        active.classList.add('hidden');
+    }
+    updatePlanInfo();
+}
 
-        window.selectBook = function(key) {
-            state.currentBook = key;
-            state.currentWords = [...new Set(getBookWords(key))];
-            state.quizIndex = 0;
-            state.quizCorrect = 0;
-            state.quizWrong = 0;
-            state.quizTotal = state.currentWords.length;
-            state.isQuizActive = false;
-            state.isAnswering = false;
-            state.planActive = false;
-            updateQuizUI();
-            renderBooks();
-            showToast(`已选择单词本: ${key} (${state.currentWords.length} 个单词)`, 'success');
-            updatePlanInfo();
+// ================================================================
+//  计划按钮
+// ================================================================
+function updatePlanInfo() {
+    const plan = getPlan();
+    const infoEl = $('planInfo');
+    const detailEl = $('planDetail');
+    const dailyTimes = parseInt($('setTimesPerDay')?.value) || 3;
+    const totalDays = parseInt($('setTotalDays')?.value) || 7;
+
+    if (plan.active && plan.dayIndex !== undefined) {
+        const day = plan.dayIndex + 1; // 显示第几天
+        const total = plan.totalDays || totalDays;
+        const queueLen = (plan.wordQueue || []).length;
+        infoEl.textContent = `📅 第 ${day}/${total} 天 · 剩余 ${queueLen} 个任务`;
+        detailEl.textContent = `每个单词每日 ${dailyTimes} 次，共 ${total} 天`;
+        if (plan.dayIndex >= total) {
+            infoEl.textContent = '🎉 计划已完成！';
+        }
+    } else {
+        infoEl.textContent = '未开始 · 每日每个单词 ' + dailyTimes + ' 次，共 ' + totalDays + ' 天';
+        detailEl.textContent = '点击 "开始今日复习" 启动计划';
+    }
+}
+
+$('btnStartPlan')?.addEventListener('click', function() {
+    if (!state.currentBook || state.currentWords.length === 0) {
+        showToast('请先选择一个包含单词的单词本', 'error');
+        return;
+    }
+    const dailyTimes = parseInt($('setTimesPerDay').value) || 3;
+    const totalDays = parseInt($('setTotalDays').value) || 7;
+    if (dailyTimes < 1 || totalDays < 1) {
+        showToast('请设置有效次数和天数', 'error');
+        return;
+    }
+
+    // 检查计划状态
+    let plan = getPlan();
+    const today = getTodayKey();
+
+    // 如果计划未激活或已完成，或不是今天开始的，重置
+    if (!plan.active || plan.dayIndex >= plan.totalDays || plan.startDate !== today) {
+        // 创建新计划
+        plan = {
+            active: true,
+            startDate: today,
+            totalDays: totalDays,
+            dailyTimes: dailyTimes,
+            dayIndex: 0,
+            wordQueue: []
         };
-
-        window.deleteBook = function(key) {
-            if (!confirm(`确定要删除单词本 "${key}" 吗？`)) return;
-            removeBook(key);
-            if (state.currentBook === key) {
-                state.currentBook = null;
-                state.currentWords = [];
-                state.quizIndex = 0;
-                state.quizCorrect = 0;
-                state.quizWrong = 0;
-                state.quizTotal = 0;
-                state.isQuizActive = false;
-                updateQuizUI();
-            }
-            renderBooks();
-            showToast(`已删除 "${key}"`, 'success');
-        };
-
-        $('btnClearAllBooks')?.addEventListener('click', function() {
-            if (!confirm('确定要清空所有单词本吗？')) return;
-            clearAllBooks();
-            state.currentBook = null;
-            state.currentWords = [];
-            state.quizIndex = 0;
-            state.quizCorrect = 0;
-            state.quizWrong = 0;
-            state.quizTotal = 0;
-            state.isQuizActive = false;
-            renderBooks();
-            updateQuizUI();
-            showToast('已清空所有单词本', 'success');
-        });
-
-        $('btnSelectBook')?.addEventListener('click', function() {
-            document.querySelector('#tabNav button[data-tab="books"]').click();
-        });
-
-        // ================================================================
-        //  12. 设置
-        // ================================================================
-        $('btnSaveSettings')?.addEventListener('click', function() {
-            const timesPerDay = parseInt($('setTimesPerDay').value) || 10;
-            const totalDays = parseInt($('setTotalDays').value) || 7;
-            const data = loadData();
-            data.settings = { timesPerDay, totalDays };
-            saveData(data);
-            $('settingsStatus').textContent = '✅ 设置已保存 (每日 ' + timesPerDay + ' 词，共 ' + totalDays + ' 天)';
-            showToast('设置已保存', 'success');
-            updatePlanInfo();
-        });
-
-        // ================================================================
-        //  13. 词库管理 UI
-        // ================================================================
-        function renderDict(filter = '') {
-            const container = $('dictList');
-            const sizeEl = $('dictSize');
-            let list = dict;
-            if (filter.trim()) {
-                const f = filter.trim().toLowerCase();
-                list = dict.filter(item => item.word.toLowerCase().includes(f));
-            }
-            sizeEl.textContent = dict.length + ' 词';
-            if (list.length === 0) {
-                container.innerHTML = `<div class="text-muted text-center" style="padding:20px 0;">没有匹配的单词</div>`;
+        // 生成第一天队列
+        const words = state.currentWords;
+        let queue = [];
+        for (let i = 0; i < dailyTimes; i++) {
+            queue = queue.concat(words);
+        }
+        shuffleArray(queue);
+        plan.wordQueue = queue;
+        updatePlan(plan);
+        state.wordQueue = queue;
+        state.isQuizActive = true;
+        showToast(`📅 第1天开始，共 ${queue.length} 次复习`, 'success');
+    } else {
+        // 计划已存在且未完成，继续
+        if (plan.wordQueue && plan.wordQueue.length > 0) {
+            showToast('继续未完成的复习', 'success');
+        } else {
+            // 队列为空，但当天未完成？可能已完成，进入下一天
+            if (plan.dayIndex < plan.totalDays - 1) {
+                plan.dayIndex++;
+                // 生成下一天队列
+                let queue = [];
+                for (let i = 0; i < dailyTimes; i++) {
+                    queue = queue.concat(state.currentWords);
+                }
+                shuffleArray(queue);
+                plan.wordQueue = queue;
+                updatePlan(plan);
+                state.wordQueue = queue;
+                state.isQuizActive = true;
+                showToast(`📅 第 ${plan.dayIndex+1} 天开始`, 'success');
+            } else {
+                showToast('🎉 所有复习计划已完成！', 'success');
                 return;
-            }
-            container.innerHTML = list.slice(0, 200).map(item =>
-                `<div class="word-item">
-                        <span class="word">${item.word}</span>
-                        <span class="meaning">${item.meaning}</span>
-                    </div>`
-            ).join('');
-            if (list.length > 200) {
-                container.innerHTML +=
-                    `<div class="text-muted text-center text-sm" style="padding:8px;">显示前200个，共${list.length}个</div>`;
             }
         }
+    }
+    // 刷新UI
+    updateQuizUI();
+    if (state.isQuizActive) {
+        renderQuizQuestion();
+    }
+    updatePlanInfo();
+});
 
-        $('dictSearch')?.addEventListener('input', function() { renderDict(this.value); });
-        $('btnDictReset')?.addEventListener('click', function() { $('dictSearch').value = ''; renderDict(); });
+$('btnResetPlan')?.addEventListener('click', function() {
+    if (!confirm('确定要重置所有复习进度吗？')) return;
+    updatePlan({ active: false, dayIndex: 0, wordQueue: [], startDate: '' });
+    state.isQuizActive = false;
+    updatePlanInfo();
+    updateQuizUI();
+    showToast('已重置计划', 'success');
+});
 
-        $('btnManualAdd')?.addEventListener('click', function() {
-            const word = $('manualWord').value.trim();
-            const meaning = $('manualMeaning').value.trim();
-            if (!word || !meaning) { showToast('请填写单词和释义', 'error'); return; }
-            const data = loadData();
-            if (!data.dict) data.dict = [];
-            const exist = data.dict.find(item => item.word.toLowerCase() === word.toLowerCase());
-            if (exist) {
-                exist.meaning = meaning;
-                showToast(`已更新 "${word}" 的释义`, 'success');
-            } else {
-                data.dict.push({ word, meaning });
-                showToast(`已添加 "${word}"`, 'success');
-            }
-            saveData(data);
-            // 重新加载词库
-            dict = data.dict.sort((a, b) => a.word.localeCompare(b.word));
-            dictLoaded = true;
-            updateDictStatus('success', `已加载 ${dict.length} 个词条`);
-            renderDict();
-            $('manualWord').value = '';
-            $('manualMeaning').value = '';
-        });
+$('btnResetQuiz')?.addEventListener('click', function() {
+    // 重新开始当前天复习（重置队列）
+    const plan = getPlan();
+    if (!plan.active || plan.dayIndex >= plan.totalDays) {
+        showToast('请先开始复习计划', 'error');
+        return;
+    }
+    const dailyTimes = parseInt($('setTimesPerDay').value) || 3;
+    const words = state.currentWords;
+    let queue = [];
+    for (let i = 0; i < dailyTimes; i++) {
+        queue = queue.concat(words);
+    }
+    shuffleArray(queue);
+    plan.wordQueue = queue;
+    updatePlan(plan);
+    state.wordQueue = queue;
+    state.quizCorrect = 0;
+    state.quizWrong = 0;
+    state.isQuizActive = true;
+    updateQuizUI();
+    renderQuizQuestion();
+    showToast('已重置今日复习', 'success');
+});
 
-        // ================================================================
-        //  14. 标签切换
-        // ================================================================
-        document.querySelectorAll('#tabNav button').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('#tabNav button').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                const tab = this.dataset.tab;
-                document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-                const target = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
-                if (target) target.classList.remove('hidden');
-                if (tab === 'manage') renderDict();
-                if (tab === 'books') renderBooks();
-                if (tab === 'settings') {
-                    const data = loadData();
-                    const settings = data.settings || {};
-                    $('setTimesPerDay').value = settings.timesPerDay || 10;
-                    $('setTotalDays').value = settings.totalDays || 7;
-                    const total = state.currentWords.length || 0;
-                    const done = state.quizCorrect + state.quizWrong;
-                    $('progressStats').innerHTML = `
-                            <div>📊 当前词本: ${state.currentBook || '未选择'} (${total} 个单词)</div>
-                            <div>✅ 今日正确: ${state.quizCorrect}  &nbsp; ❌ 今日错误: ${state.quizWrong}</div>
-                            <div>📈 完成率: ${total > 0 ? Math.round((done / total) * 100) : 0}% (${done}/${total})</div>
-                            <div class="text-sm mt-12">📅 计划状态: ${getPlan().active ? '进行中' : '未开始'}</div>
-                        `;
+// ================================================================
+//  导入功能（同前，略）
+// ================================================================
+document.getElementById('fileInputDict')?.addEventListener('change', function(e) {
+    const file = this.files[0];
+    if (!file) return;
+    loadDictFromFile(file);
+    this.value = '';
+});
+
+document.getElementById('fileInputTxt')?.addEventListener('change', function(e) {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const buf = ev.target.result;
+        let text = new TextDecoder('utf-8').decode(buf);
+        if (text.includes('�')) text = new TextDecoder('gbk').decode(buf);
+        document.getElementById('importText').value = text;
+        showToast('文件内容已加载，请点击"导入单词"', 'success');
+    };
+    reader.readAsArrayBuffer(file);
+    this.value = '';
+});
+
+document.getElementById('fileInputPdf')?.addEventListener('change', function(e) {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const buf = ev.target.result;
+        let text = new TextDecoder('utf-8').decode(buf);
+        if (text.includes('�')) text = new TextDecoder('gbk').decode(buf);
+        document.getElementById('importPdfText').value = text;
+        showToast('文件内容已加载，请点击"解析并导入词库"', 'success');
+    };
+    reader.readAsArrayBuffer(file);
+    this.value = '';
+});
+
+$('btnImportTxt')?.addEventListener('click', function() {
+    const text = $('importText').value.trim();
+    if (!text) { showToast('请粘贴单词列表或上传文件', 'error'); return; }
+    const lines = text.split(/\n/).map(s => s.trim()).filter(s => s.length > 0);
+    if (lines.length === 0) { showToast('没有有效的单词', 'error'); return; }
+    const unknown = [], known = [];
+    lines.forEach(word => {
+        const meaning = lookupMeaning(word);
+        if (meaning) known.push({ word, meaning });
+        else unknown.push(word);
+    });
+    if (known.length === 0) {
+        showToast('⚠️ 所有单词均未在词库中找到，请先导入词库', 'error');
+        $('importResult').innerHTML = `<span style="color:#b91c1c;">未找到匹配: ${unknown.join(', ')}</span>`;
+        return;
+    }
+    const today = getTodayKey();
+    const wordsToAdd = known.map(item => item.word);
+    const added = addWordsToBook(today, wordsToAdd);
+    let msg = `✅ 成功导入 ${added} 个单词到 "${today}" 单词本`;
+    if (unknown.length > 0) msg += `，${unknown.length} 个未匹配: ${unknown.join(', ')}`;
+    showToast(msg, 'success');
+    $('importResult').innerHTML = msg;
+    $('importText').value = '';
+    renderBooks();
+    updateQuizUI();
+});
+
+$('btnClearImport')?.addEventListener('click', function() {
+    $('importText').value = '';
+    $('importResult').innerHTML = '';
+});
+
+$('btnImportPdf')?.addEventListener('click', function() {
+    const text = $('importPdfText').value.trim();
+    if (!text) { showToast('请粘贴考研大纲词库文本或上传文件', 'error'); return; }
+    const progressBar = $('importProgress');
+    const progressFill = $('importProgressFill');
+    progressBar.classList.remove('hidden');
+    progressFill.style.width = '0%';
+
+    const lines = text.split(/\n/).filter(s => s.trim().length > 0);
+    const totalLines = lines.length;
+    let processed = 0, parsed = 0, skipped = 0;
+    const newEntries = [];
+    const data = loadData();
+    if (!data.dict) data.dict = [];
+
+    const patterns = [
+        /^([a-zA-Z\-']+)\s*\/[^\/]+\/\s*(.+)/,
+        /^([a-zA-Z\-']+)\s+\[[^\]]+\]\s+(.+)/,
+        /^([a-zA-Z\-']+)\s+(.+)/,
+        /^([a-zA-Z\-']+)\/[^\/]+\/(.+)/
+    ];
+
+    function isValidWordLine(line) {
+        const firstChar = line.trim()[0];
+        if (!firstChar) return false;
+        if (/[0-9\u4e00-\u9fa5]/.test(firstChar)) return false;
+        return true;
+    }
+
+    for (let line of lines) {
+        line = line.trim();
+        if (!line) continue;
+        if (!isValidWordLine(line)) { skipped++; continue; }
+        let matched = false;
+        for (let pattern of patterns) {
+            const match = line.match(pattern);
+            if (match) {
+                let word = match[1].trim();
+                let meaning = match[2].trim();
+                if (/[\u4e00-\u9fa5]/.test(word)) continue;
+                if (!meaning) continue;
+                meaning = meaning.replace(/[.;,。，\s]+$/, '').trim();
+                if (word && meaning) {
+                    const exist = data.dict.find(item => item.word.toLowerCase() === word.toLowerCase());
+                    if (exist) exist.meaning = meaning;
+                    else { data.dict.push({ word, meaning }); newEntries.push(word); }
+                    parsed++;
+                    matched = true;
+                    break;
                 }
-                if (tab === 'quiz') updateQuizUI();
-            });
-        });
+            }
+        }
+        if (!matched) {
+            const parts = line.split(/\s+/);
+            if (parts.length >= 2) {
+                const word = parts[0];
+                const meaning = parts.slice(1).join(' ');
+                if (isEnglishWord(word) && meaning.length > 0) {
+                    const exist = data.dict.find(item => item.word.toLowerCase() === word.toLowerCase());
+                    if (exist) exist.meaning = meaning;
+                    else { data.dict.push({ word, meaning }); newEntries.push(word); }
+                    parsed++;
+                } else skipped++;
+            } else skipped++;
+        }
+        processed++;
+        progressFill.style.width = Math.round((processed/totalLines)*100) + '%';
+    }
 
-        // ================================================================
-        //  15. 初始化
-        // ================================================================
-        function init() {
-            // 检测存储
-            getStorage();
+    saveData(data);
+    dict = data.dict.sort((a,b) => a.word.localeCompare(b.word));
+    dictLoaded = true;
+    updateDictStatus('success');
+    renderDict();
 
-            initDict();
+    setTimeout(() => progressBar.classList.add('hidden'), 500);
 
+    const resultDiv = $('importPdfResult');
+    if (parsed === 0) {
+        resultDiv.innerHTML = `<span class="text-danger">❌ 解析失败，未能识别任何单词。请检查格式</span>`;
+        showToast('解析失败', 'error');
+    } else {
+        resultDiv.innerHTML = `
+            <div class="text-success">✅ 成功解析并导入 <strong>${parsed}</strong> 个单词到词库</div>
+            <div class="text-sm text-muted mt-12">新增/更新 ${newEntries.length} 个，跳过 ${skipped} 行</div>
+            <div class="stats-grid">
+                <div class="stat"><div class="num">${parsed}</div><div class="label">解析成功</div></div>
+                <div class="stat"><div class="num">${newEntries.length}</div><div class="label">新增词条</div></div>
+                <div class="stat"><div class="num">${skipped}</div><div class="label">跳过行</div></div>
+            </div>
+        `;
+        showToast(`✅ 词库已更新，导入 ${parsed} 个单词`, 'success');
+        $('importPdfText').value = '';
+        renderBooks();
+        updateQuizUI();
+    }
+});
+
+$('btnLoadSample')?.addEventListener('click', function() {
+    const sample = ['abandon','ability','able','abnormal','aboard','abolish','abound',
+        'about','above','abroad','abrupt','absence','absent','absolute','absorb',
+        'abstract','absurd','abundance','abundant','abuse','academic','academy',
+        'accelerate','accent','accept','acceptance','access','accessory','accident',
+        'accidental','acclaim','accommodate','accommodation','accompany','accomplish',
+        'accord','accordance','according','accordingly','account','accountant',
+        'accumulate','accuracy','accurate','accuse','accustom','ache','achieve'];
+    const today = getTodayKey();
+    const added = addWordsToBook(today, sample);
+    showToast(`✅ 已导入 ${added} 个示例单词到 "${today}"`, 'success');
+    renderBooks();
+    updateQuizUI();
+});
+
+// ================================================================
+//  单词本 UI
+// ================================================================
+function renderBooks() {
+    const container = $('bookList');
+    const books = getBookNames();
+    if (books.length === 0) {
+        container.innerHTML = `<div class="text-muted text-center" style="padding:40px 0;">📭 暂无单词本</div>`;
+        return;
+    }
+    container.innerHTML = books.map(key => {
+        const words = getBookWords(key);
+        return `<div class="book-item">
+            <div class="info">
+                <span class="date">📂 ${key}</span>
+                <span class="count">${words.length} 个单词</span>
+                <span class="badge">${state.currentBook === key ? '当前' : ''}</span>
+            </div>
+            <div class="flex gap-8">
+                <button class="primary" data-book="${key}" onclick="selectBook('${key}')">选择</button>
+                <button class="danger outline" data-book="${key}" onclick="deleteBook('${key}')">删除</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+window.selectBook = function(key) {
+    state.currentBook = key;
+    state.currentWords = [...new Set(getBookWords(key))];
+    state.quizCorrect = 0;
+    state.quizWrong = 0;
+    state.isQuizActive = false;
+    // 重置计划（选择新词本后计划失效）
+    updatePlan({ active: false, dayIndex: 0, wordQueue: [] });
+    updateQuizUI();
+    renderBooks();
+    showToast(`已选择单词本: ${key} (${state.currentWords.length} 个单词)`, 'success');
+    updatePlanInfo();
+};
+
+window.deleteBook = function(key) {
+    if (!confirm(`确定要删除单词本 "${key}" 吗？`)) return;
+    removeBook(key);
+    if (state.currentBook === key) {
+        state.currentBook = null;
+        state.currentWords = [];
+        state.isQuizActive = false;
+        updatePlan({ active: false, dayIndex: 0, wordQueue: [] });
+        updateQuizUI();
+    }
+    renderBooks();
+    showToast(`已删除 "${key}"`, 'success');
+};
+
+$('btnClearAllBooks')?.addEventListener('click', function() {
+    if (!confirm('确定要清空所有单词本吗？')) return;
+    clearAllBooks();
+    state.currentBook = null;
+    state.currentWords = [];
+    state.isQuizActive = false;
+    updatePlan({ active: false, dayIndex: 0, wordQueue: [] });
+    renderBooks();
+    updateQuizUI();
+    showToast('已清空所有单词本', 'success');
+});
+
+$('btnSelectBook')?.addEventListener('click', function() {
+    document.querySelector('#tabNav button[data-tab="books"]').click();
+});
+
+// ================================================================
+//  设置
+// ================================================================
+$('btnSaveSettings')?.addEventListener('click', function() {
+    const times = parseInt($('setTimesPerDay').value) || 3;
+    const days = parseInt($('setTotalDays').value) || 7;
+    const data = loadData();
+    data.settings = { timesPerDay: times, totalDays: days };
+    saveData(data);
+    $('settingsStatus').textContent = `✅ 设置已保存 (每日 ${times} 次，共 ${days} 天)`;
+    showToast('设置已保存', 'success');
+    updatePlanInfo();
+});
+
+// ================================================================
+//  词库管理 UI
+// ================================================================
+function renderDict(filter = '') {
+    const container = $('dictList');
+    const sizeEl = $('dictSize');
+    let list = dict;
+    if (filter.trim()) {
+        const f = filter.trim().toLowerCase();
+        list = dict.filter(item => item.word.toLowerCase().includes(f));
+    }
+    sizeEl.textContent = dict.length + ' 词';
+    if (list.length === 0) {
+        container.innerHTML = `<div class="text-muted text-center" style="padding:20px 0;">没有匹配的单词</div>`;
+        return;
+    }
+    container.innerHTML = list.slice(0, 200).map(item =>
+        `<div class="word-item"><span class="word">${item.word}</span><span class="meaning">${item.meaning}</span></div>`
+    ).join('');
+    if (list.length > 200) {
+        container.innerHTML += `<div class="text-muted text-center text-sm" style="padding:8px;">显示前200个，共${list.length}个</div>`;
+    }
+}
+
+$('dictSearch')?.addEventListener('input', function() { renderDict(this.value); });
+$('btnDictReset')?.addEventListener('click', function() { $('dictSearch').value = ''; renderDict(); });
+
+$('btnManualAdd')?.addEventListener('click', function() {
+    const word = $('manualWord').value.trim();
+    const meaning = $('manualMeaning').value.trim();
+    if (!word || !meaning) { showToast('请填写单词和释义', 'error'); return; }
+    const data = loadData();
+    if (!data.dict) data.dict = [];
+    const exist = data.dict.find(item => item.word.toLowerCase() === word.toLowerCase());
+    if (exist) exist.meaning = meaning;
+    else data.dict.push({ word, meaning });
+    saveData(data);
+    dict = data.dict.sort((a,b) => a.word.localeCompare(b.word));
+    dictLoaded = true;
+    updateDictStatus('success');
+    renderDict();
+    $('manualWord').value = '';
+    $('manualMeaning').value = '';
+    showToast(`已添加/更新 "${word}"`, 'success');
+});
+
+// ================================================================
+//  标签切换
+// ================================================================
+document.querySelectorAll('#tabNav button').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('#tabNav button').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const tab = this.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        const target = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+        if (target) target.classList.remove('hidden');
+        if (tab === 'manage') renderDict();
+        if (tab === 'books') renderBooks();
+        if (tab === 'settings') {
             const data = loadData();
             const settings = data.settings || {};
-            if (settings.timesPerDay) $('setTimesPerDay').value = settings.timesPerDay;
-            if (settings.totalDays) $('setTotalDays').value = settings.totalDays;
-
+            $('setTimesPerDay').value = settings.timesPerDay || 3;
+            $('setTotalDays').value = settings.totalDays || 7;
             const plan = getPlan();
-            if (plan.active && plan.wordQueue && plan.wordQueue.length > 0) {
-                const today = getTodayKey();
-                if (plan.startDate === today) {
-                    state.currentWords = plan.wordQueue;
-                    state.quizIndex = plan.wordIndex || 0;
-                    state.quizTotal = state.currentWords.length;
-                    state.isQuizActive = true;
-                    state.planActive = true;
-                    let correct = 0, wrong = 0;
-                    state.currentWords.forEach(w => {
-                        const rec = getRecord(w, today);
-                        correct += rec.correct;
-                        wrong += rec.wrong;
-                    });
-                    state.quizCorrect = correct;
-                    state.quizWrong = wrong;
-                    if (state.quizIndex >= state.currentWords.length) {
-                        state.isQuizActive = false;
-                        state.planActive = false;
-                    }
-                } else {
-                    updatePlan({ active: false, dayIndex: 0, todayCount: 0 });
-                }
-            }
-
-            const books = getBookNames();
-            if (books.length > 0) {
-                const latest = books[books.length - 1];
-                state.currentBook = latest;
-                state.currentWords = [...new Set(getBookWords(latest))];
-                state.quizTotal = state.currentWords.length;
-            }
-
-            renderBooks();
-            updateQuizUI();
-            renderDict();
-            if (state.isQuizActive && state.quizIndex < state.currentWords.length) {
-                renderQuizQuestion();
-            }
-            updatePlanInfo();
-            console.log('📚 应用已初始化，词库大小:', dict.length, '单词本:', books.length);
+            const total = state.currentWords.length || 0;
+            const done = state.quizCorrect + state.quizWrong;
+            $('progressStats').innerHTML = `
+                <div>📊 当前词本: ${state.currentBook || '未选择'} (${total} 个单词)</div>
+                <div>✅ 今日正确: ${state.quizCorrect}  &nbsp; ❌ 今日错误: ${state.quizWrong}</div>
+                <div>📈 完成率: ${total > 0 ? Math.round((done / (total * (parseInt($('setTimesPerDay').value)||3))) * 100) : 0}%</div>
+                <div class="text-sm mt-12">📅 计划状态: ${plan.active ? '进行中' : '未开始'}</div>
+            `;
         }
+        if (tab === 'quiz') updateQuizUI();
+    });
+});
 
-        document.addEventListener('DOMContentLoaded', init);
-        window.startQuiz = startQuiz;
-    </script>
+// ================================================================
+//  初始化
+// ================================================================
+function init() {
+    getStorage(); // 检测 localStorage
+    initDict();
+
+    const data = loadData();
+    const settings = data.settings || {};
+    if (settings.timesPerDay) $('setTimesPerDay').value = settings.timesPerDay;
+    if (settings.totalDays) $('setTotalDays').value = settings.totalDays;
+
+    // 恢复计划状态
+    const plan = getPlan();
+    if (plan.active && plan.dayIndex !== undefined && plan.dayIndex < plan.totalDays) {
+        // 有效计划
+        state.isQuizActive = true;
+        // 确保队列存在
+        if (!plan.wordQueue) plan.wordQueue = [];
+        // 如果今天是新的一天，且队列为空，自动生成？但我们让用户点击开始
+    } else {
+        // 无效计划，重置
+        updatePlan({ active: false, dayIndex: 0, wordQueue: [] });
+    }
+
+    const books = getBookNames();
+    if (books.length > 0) {
+        const latest = books[books.length - 1];
+        state.currentBook = latest;
+        state.currentWords = [...new Set(getBookWords(latest))];
+    }
+
+    renderBooks();
+    updateQuizUI();
+    renderDict();
+    updatePlanInfo();
+
+    // 如果有有效计划且队列非空，自动开始
+    if (plan.active && plan.wordQueue && plan.wordQueue.length > 0) {
+        state.isQuizActive = true;
+        renderQuizQuestion();
+    }
+
+    console.log('📚 应用已初始化，词库大小:', dict.length, '单词本:', books.length);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+window.startQuiz = startQuiz;
+</script>
 </body>
 </html>
