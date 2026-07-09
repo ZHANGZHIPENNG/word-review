@@ -2,10 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>考研英语 · 智能复习</title>
     <style>
-        /* ========== 完整样式 ========== */
+        /* ========== 全局样式 ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Roboto, sans-serif;
@@ -16,6 +16,7 @@
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
+            touch-action: manipulation;
         }
         .app-container {
             max-width: 1000px;
@@ -75,8 +76,6 @@
             background: #fafcfe;
             transition: 0.2s;
             color: #0f172a;
-            -webkit-user-select: text;
-            user-select: text;
         }
         input:focus, textarea:focus {
             outline: none;
@@ -100,8 +99,6 @@
             font-size: 12px;
             font-weight: 500;
             color: #334155;
-            -webkit-user-select: none;
-            user-select: none;
         }
         .badge.primary { background: #1e293b; color: #fff; }
         .badge.success { background: #0b8a5e; color: #fff; }
@@ -126,7 +123,6 @@
             color: #475569;
             font-weight: 500;
             font-size: 14px;
-            touch-action: manipulation;
         }
         .tabs button.active {
             background: #ffffff;
@@ -183,7 +179,6 @@
             -webkit-user-select: none;
             user-select: none;
             touch-action: manipulation;
-            position: relative;
         }
         .quiz-options button.correct { border-color: #0b8a5e; background: #e6f7ef; color: #0b8a5e; }
         .quiz-options button.wrong { border-color: #b91c1c; background: #fde8e8; color: #b91c1c; }
@@ -203,8 +198,6 @@
             opacity: 0;
             transition: opacity 0.15s ease;
             display: none;
-            -webkit-user-select: none;
-            user-select: none;
         }
         .long-press-tooltip.show { opacity: 1; display: block; }
         .error-feedback {
@@ -226,7 +219,6 @@
             max-height: 420px;
             overflow-y: auto;
             padding-right: 4px;
-            -webkit-overflow-scrolling: touch;
         }
         .word-list::-webkit-scrollbar { width: 5px; }
         .word-list::-webkit-scrollbar-thumb { background: #dce1e9; border-radius: 10px; }
@@ -240,8 +232,6 @@
             border: 1px solid transparent;
             transition: 0.15s;
             gap: 12px;
-            -webkit-user-select: none;
-            user-select: none;
         }
         .word-item:hover { background: #f1f5f9; border-color: #e2e8f0; }
         .word-item .word { font-weight: 500; font-size: 15px; }
@@ -281,9 +271,6 @@
             margin-bottom: 8px;
             cursor: pointer;
             transition: 0.15s;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
         }
         .book-item:hover { background: #eef2f6; }
         .book-item .info { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
@@ -305,8 +292,6 @@
             animation: slideUp 0.3s ease;
             max-width: 90%;
             text-align: center;
-            -webkit-user-select: none;
-            user-select: none;
         }
         .toast.success { background: #0b8a5e; }
         .toast.error { background: #b91c1c; }
@@ -386,8 +371,6 @@
             align-items: center;
             gap: 6px;
             margin-left: 12px;
-            -webkit-user-select: none;
-            user-select: none;
         }
         .dict-status.loading { background: #fef3c7; color: #92400e; }
         .dict-status.success { background: #d1fae5; color: #065f46; }
@@ -460,9 +443,6 @@
             border: 1.5px dashed #d97706;
             color: #d97706;
             padding: 8px 20px;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
         }
         .quiz-chop-btn:hover { background: #fef3c7; transform: none; }
         .quiz-nav-btn {
@@ -470,9 +450,6 @@
             border: 1.5px solid #cbd5e1;
             padding: 8px 16px;
             font-size: 14px;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
         }
         .quiz-nav-btn:hover { background: #f1f5f9; transform: none; }
         .quiz-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
@@ -491,8 +468,6 @@
             padding: 6px 12px;
             border-radius: 8px;
             display: inline-block;
-            -webkit-user-select: none;
-            user-select: none;
         }
         .paste-area textarea {
             min-height: 150px;
@@ -1091,15 +1066,24 @@
         }
 
         // ================================================================
-        //  长按工具（手机适配，阻止默认菜单）
+        //  长按功能（手机端适配 - 彻底阻止浏览器菜单）
         // ================================================================
+        let longPressTimer = null;
+        let longPressActive = false;
+
         function setupLongPress(element, onLongPress, onRelease) {
-            let longPressTimer = null;
-            let longPressActive = false;
+            // 阻止右键菜单（桌面端）
+            element.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                return false;
+            });
+
+            // 单独绑定 touchstart 阻止默认行为（关键）
+            element.addEventListener('touchstart', function(e) {
+                e.preventDefault(); // 阻止弹出复制/选择菜单
+            }, { passive: false });
 
             const startLongPress = function(e) {
-                // 阻止默认行为（防止浏览器菜单）
-                e.preventDefault();
                 longPressActive = false;
                 if (longPressTimer) clearTimeout(longPressTimer);
                 longPressTimer = setTimeout(() => {
@@ -1109,7 +1093,6 @@
             };
 
             const endLongPress = function(e) {
-                e.preventDefault();
                 if (longPressTimer) {
                     clearTimeout(longPressTimer);
                     longPressTimer = null;
@@ -1120,21 +1103,12 @@
                 }
             };
 
-            // 触摸事件（移动端）
-            element.addEventListener('touchstart', startLongPress, { passive: false });
-            element.addEventListener('touchend', endLongPress, { passive: false });
-            element.addEventListener('touchcancel', endLongPress, { passive: false });
-
-            // 鼠标事件（桌面端）
             element.addEventListener('mousedown', startLongPress);
             element.addEventListener('mouseup', endLongPress);
             element.addEventListener('mouseleave', endLongPress);
-
-            // 阻止右键菜单（桌面）
-            element.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-                return false;
-            });
+            element.addEventListener('touchstart', startLongPress, { passive: false });
+            element.addEventListener('touchend', endLongPress, { passive: true });
+            element.addEventListener('touchcancel', endLongPress, { passive: true });
         }
 
         // ================================================================
@@ -1465,7 +1439,7 @@
         }
 
         // ================================================================
-        //  计划管理（每个词本独立，普通和错误分开）
+        //  计划管理
         // ================================================================
         function getBookProgress(bookKey) {
             const data = loadData();
@@ -2169,7 +2143,6 @@
                 if (!state.queue[i].done) totalRemain++;
             }
 
-            // 生成选项
             const similar = findSimilarWords(word, dict, 3);
             let optionItems = [];
             optionItems.push({ meaning: meaning, word: word });
@@ -2305,24 +2278,16 @@
                     }
                     btn.style.cursor = 'default';
                 } else {
-                    // 为按钮绑定长按（手机适配）
+                    // 设置长按（已适配手机端）
                     setupLongPress(btn,
                         function(e) {
                             if (optWord && optWord !== '') {
                                 const tooltip = document.getElementById('longPressTooltip');
                                 tooltip.textContent = optWord;
                                 tooltip.style.display = 'block';
-                                // 计算位置
-                                let clientX, clientY;
-                                if (e.touches) {
-                                    clientX = e.touches[0].clientX;
-                                    clientY = e.touches[0].clientY;
-                                } else {
-                                    clientX = e.clientX;
-                                    clientY = e.clientY;
-                                }
-                                tooltip.style.left = (clientX - tooltip.offsetWidth / 2) + 'px';
-                                tooltip.style.top = (clientY - tooltip.offsetHeight - 10) + 'px';
+                                const pos = e.touches ? e.touches[0] : e;
+                                tooltip.style.left = (pos.clientX - tooltip.offsetWidth / 2) + 'px';
+                                tooltip.style.top = (pos.clientY - tooltip.offsetHeight - 10) + 'px';
                                 tooltip.classList.add('show');
                             }
                         },
@@ -2361,7 +2326,6 @@
                                 advanceToNext();
                             }, 300);
                         } else {
-                            // 错误处理：显示英文（中文）
                             if (!state.wrongFlag) {
                                 state.wrongFlag = true;
                                 state.quizWrong++;
@@ -3295,3 +3259,5 @@
     </script>
 </body>
 </html>
+
+
