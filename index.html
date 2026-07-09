@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>考研英语 · 智能复习</title>
     <style>
+        /* ========== 全局样式 ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Roboto, sans-serif;
@@ -417,6 +418,31 @@
             border-radius: 8px;
             display: inline-block;
         }
+        .paste-area textarea {
+            min-height: 150px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .file-import-area {
+            border: 2px dashed #dce1e9;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+        .file-import-area input[type="file"] {
+            display: block;
+            margin: 12px auto;
+        }
+        /* 错误复习模式标识 */
+        .error-mode-badge {
+            background: #b91c1c;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -425,6 +451,7 @@
         📚 考研英语 · 智能复习
         <small>2026 大纲 · 智能记忆</small>
         <span id="dictStatusBadge" class="dict-status success">✅ 备用词库已加载</span>
+        <span id="errorModeBadge" class="error-mode-badge hidden">❌ 错误复习模式</span>
     </h1>
 
     <div id="storageWarning" class="storage-warning">
@@ -471,6 +498,9 @@
                     <button class="quiz-nav-btn" id="btnNextWord">下一个 →</button>
                     <button class="quiz-chop-btn" id="btnChopCurrent">🔪 斩掉这个单词</button>
                 </div>
+                <div id="errorModeHint" class="hidden" style="margin-top:12px; font-size:13px; color:#b91c1c; background:#fde8e8; padding:6px 12px; border-radius:8px; display:inline-block;">
+                    ⚠️ 当前为错误复习模式，只复习有错误的单词
+                </div>
             </div>
         </div>
         <div class="card mt-20" id="planStatus">
@@ -501,19 +531,31 @@
                 <div class="mt-12 text-sm" id="dictLoadResult"></div>
             </div>
             <div class="card">
-                <div class="card-title">📝 导入单词列表</div>
-                <p class="text-muted text-sm mb-12">每行一个英文单词，自动匹配词库释义</p>
-                <textarea id="importText" placeholder="example&#10;abandon&#10;ability"></textarea>
+                <div class="card-title">📝 粘贴词库内容</div>
+                <p class="text-muted text-sm mb-12">
+                    复制 <code>dict.txt</code> 的全部内容粘贴到下方，然后点击「加载粘贴内容」。
+                </p>
+                <textarea id="pasteDictText" placeholder="将 dict.txt 的内容粘贴到这里..."></textarea>
                 <div class="flex mt-12">
-                    <button class="primary" id="btnImportTxt">导入单词</button>
-                    <button class="outline" id="btnClearImport">清空</button>
-                    <div class="file-upload-wrapper">
-                        <button class="outline">📂 上传TXT</button>
-                        <input type="file" id="fileInputTxt" accept=".txt" />
-                    </div>
+                    <button class="success" id="btnPasteDict">📥 加载粘贴内容</button>
+                    <button class="outline" id="btnClearPaste">清空</button>
                 </div>
-                <div class="mt-12 text-sm text-muted" id="importResult"></div>
+                <div class="mt-12 text-sm" id="pasteResult"></div>
             </div>
+        </div>
+        <div class="card mt-20">
+            <div class="card-title">📝 导入单词列表</div>
+            <p class="text-muted text-sm mb-12">每行一个英文单词，自动匹配词库释义</p>
+            <textarea id="importText" placeholder="example&#10;abandon&#10;ability"></textarea>
+            <div class="flex mt-12">
+                <button class="primary" id="btnImportTxt">导入单词</button>
+                <button class="outline" id="btnClearImport">清空</button>
+                <div class="file-upload-wrapper">
+                    <button class="outline">📂 上传TXT</button>
+                    <input type="file" id="fileInputTxt" accept=".txt" />
+                </div>
+            </div>
+            <div class="mt-12 text-sm text-muted" id="importResult"></div>
         </div>
         <div class="card mt-20">
             <div class="card-title">📚 导入完整考研大纲词库（粘贴）</div>
@@ -598,6 +640,18 @@
             <div class="card-title">📊 复习进度</div>
             <div id="progressStats" class="text-muted">加载中...</div>
         </div>
+        <div class="card mt-20">
+            <div class="card-title">💾 数据备份与恢复</div>
+            <p class="text-muted text-sm mb-12">导出所有数据（单词本、记录、词库、计划等）为 JSON 文件，或从文件恢复。</p>
+            <div class="flex">
+                <button class="success" id="btnExportData">📤 导出数据</button>
+                <div class="file-upload-wrapper">
+                    <button class="primary">📥 导入数据</button>
+                    <input type="file" id="fileInputData" accept=".json" />
+                </div>
+            </div>
+            <div id="importDataStatus" class="mt-12 text-sm text-muted"></div>
+        </div>
     </div>
 
     <!-- 词库管理 -->
@@ -646,7 +700,8 @@
         <div class="card">
             <div class="card-title">❌ 错误单词记录</div>
             <p class="text-muted text-sm mb-12">所有背错过的单词及其总错误次数（累计）</p>
-            <div id="errorList" class="word-list" style="max-height:450px;">
+            <button class="primary" id="btnReviewErrors">📖 复习这些错误单词</button>
+            <div id="errorList" class="word-list" style="max-height:450px; margin-top:12px;">
                 <div class="text-muted text-center" style="padding:40px 0;">暂无错误记录</div>
             </div>
         </div>
@@ -1152,7 +1207,7 @@ function removeBook(key) {
             state.currentWords = [];
             state.reviewableWords = [];
             state.isQuizActive = false;
-            updatePlan({ active: false, dayIndex: 0, queue: [], queueIndex: 0, currentBook: null });
+            updatePlan({ active: false, dayIndex: 0, queue: [], queueIndex: 0, currentBook: null, errorMode: false });
             updateQuizUI();
         }
         renderBooks();
@@ -1169,7 +1224,7 @@ function clearAllBooks() {
         state.currentWords = [];
         state.reviewableWords = [];
         state.isQuizActive = false;
-        updatePlan({ active: false, dayIndex: 0, queue: [], queueIndex: 0, currentBook: null });
+        updatePlan({ active: false, dayIndex: 0, queue: [], queueIndex: 0, currentBook: null, errorMode: false });
         renderBooks();
         updateQuizUI();
         showToast('已清空所有单词本', 'success');
@@ -1266,6 +1321,7 @@ const state = {
     wrongFlag: false,
     detailBook: null,
     showingChopped: false,
+    errorMode: false, // 是否处于错误复习模式
 };
 
 // ================================================================
@@ -1352,7 +1408,7 @@ function showPrompt(message, defaultValue, onConfirm) {
 }
 
 // ================================================================
-//  错误记录渲染
+//  错误记录渲染 & 复习错误单词
 // ================================================================
 function renderErrors() {
     const container = document.getElementById('errorList');
@@ -1370,6 +1426,68 @@ function renderErrors() {
             </span>
         </div>`
     ).join('');
+}
+
+// 复习错误单词
+function startErrorReview() {
+    const errors = getErrorWords();
+    if (errors.length === 0) {
+        showToast('没有错误记录可复习', 'error');
+        return;
+    }
+    // 提取错误单词列表（按错误次数降序，确保有错误即可）
+    const words = errors.map(item => item.word);
+    // 检查这些单词是否都在当前词本中（不在词本中无法复习，因为需要释义）
+    const available = [];
+    const unavailable = [];
+    words.forEach(w => {
+        if (lookupMeaning(w)) {
+            available.push(w);
+        } else {
+            unavailable.push(w);
+        }
+    });
+    if (available.length === 0) {
+        showToast('错误单词均不在词库中，请先补全词库', 'error');
+        return;
+    }
+    if (unavailable.length > 0) {
+        showToast(`⚠️ ${unavailable.length} 个错误单词不在词库中，已跳过`, 'warning');
+    }
+    // 设置错误复习模式
+    state.errorMode = true;
+    document.getElementById('errorModeBadge').classList.remove('hidden');
+    document.getElementById('errorModeHint').classList.remove('hidden');
+
+    // 生成复习队列：每个单词出现一次（按错误次数从高到低，已排序）
+    const queue = available.map(word => ({ word, done: false }));
+    // 打乱顺序让复习更有随机性
+    shuffleArray(queue);
+
+    // 保存计划
+    const plan = getPlan();
+    plan.active = true;
+    plan.dayIndex = 0;
+    plan.totalDays = 1; // 错误复习只进行一天
+    plan.currentBook = state.currentBook || '错误复习';
+    plan.queue = queue;
+    plan.queueIndex = 0;
+    plan.errorMode = true;
+    updatePlan(plan);
+
+    state.queue = queue;
+    state.currentIndex = 0;
+    state.totalRounds = 1;
+    state.roundSize = queue.length;
+    state.quizCorrect = 0;
+    state.quizWrong = 0;
+    state.isQuizActive = true;
+    state.wrongFlag = false;
+    // 切换到背诵标签
+    document.querySelector('#tabNav button[data-tab="quiz"]').click();
+    updateQuizUI();
+    renderQuizQuestion();
+    showToast(`📖 开始复习 ${queue.length} 个错误单词`, 'success');
 }
 
 // ================================================================
@@ -1562,7 +1680,7 @@ document.addEventListener('click', function(e) {
 });
 
 // ================================================================
-//  复习核心
+//  复习核心（支持错误模式）
 // ================================================================
 
 function generateDailyQueue() {
@@ -1584,11 +1702,24 @@ function generateDailyQueue() {
 }
 
 function startQuiz() {
+    // 检查是否处于错误复习模式
+    const plan = getPlan();
+    if (plan.errorMode && state.queue && state.queue.length > 0) {
+        // 继续错误复习
+        state.isQuizActive = true;
+        state.errorMode = true;
+        document.getElementById('errorModeBadge').classList.remove('hidden');
+        document.getElementById('errorModeHint').classList.remove('hidden');
+        updateQuizUI();
+        renderQuizQuestion();
+        return;
+    }
+
+    // 正常复习模式
     if (!state.currentBook || state.reviewableWords.length === 0) {
         showToast('当前词本没有可复习的单词（待补全或已斩单词不参与复习）', 'error');
         return;
     }
-    const plan = getPlan();
     if (!plan.active || plan.dayIndex >= plan.totalDays || plan.currentBook !== state.currentBook) {
         showToast('请先点击 "开始今日复习" 启动计划', 'error');
         return;
@@ -1598,6 +1729,7 @@ function startQuiz() {
         if (queue.length === 0) return;
         plan.queue = queue;
         plan.queueIndex = 0;
+        plan.errorMode = false;
         updatePlan(plan);
     }
     state.queue = plan.queue;
@@ -1608,6 +1740,9 @@ function startQuiz() {
     state.quizWrong = 0;
     state.isQuizActive = true;
     state.wrongFlag = false;
+    state.errorMode = false;
+    document.getElementById('errorModeBadge').classList.add('hidden');
+    document.getElementById('errorModeHint').classList.add('hidden');
     advanceToNext();
     updateQuizUI();
 }
@@ -1621,13 +1756,22 @@ function advanceToNext() {
     }
     if (idx >= state.queue.length) {
         state.isQuizActive = false;
-        showToast('🎉 今日所有单词已完成！', 'success');
-        plan.dayIndex = (plan.dayIndex || 0) + 1;
+        if (plan.errorMode) {
+            showToast('🎉 错误单词复习完成！', 'success');
+            // 清除错误模式标志
+            plan.errorMode = false;
+            state.errorMode = false;
+            document.getElementById('errorModeBadge').classList.add('hidden');
+            document.getElementById('errorModeHint').classList.add('hidden');
+        } else {
+            showToast('🎉 今日所有单词已完成！', 'success');
+            plan.dayIndex = (plan.dayIndex || 0) + 1;
+            if (plan.dayIndex >= plan.totalDays) {
+                plan.active = false;
+            }
+        }
         plan.queue = [];
         plan.queueIndex = 0;
-        if (plan.dayIndex >= plan.totalDays) {
-            plan.active = false;
-        }
         updatePlan(plan);
         updateQuizUI();
         return;
@@ -1719,7 +1863,7 @@ function renderQuizQuestion() {
     prevBtn.classList.remove('hidden');
     prevBtn.disabled = (state.currentIndex === 0);
 
-    // 下一个按钮：检查后面是否有未完成的
+    // 下一个按钮
     let hasNext = false;
     for (let i = state.currentIndex + 1; i < totalItems; i++) {
         if (!state.queue[i].done) { hasNext = true; break; }
@@ -1733,7 +1877,13 @@ function renderQuizQuestion() {
         if (!state.currentBook || !state.currentWord) return;
         showConfirm(`确定要斩掉 "${state.currentWord}" 吗？它将不再出现在复习中。`, () => {
             const wordToChop = state.currentWord;
-            chopWord(state.currentBook, wordToChop);
+            // 如果是错误复习模式，从当前词本中斩掉
+            if (state.errorMode && state.currentBook) {
+                chopWord(state.currentBook, wordToChop);
+            } else if (state.currentBook) {
+                chopWord(state.currentBook, wordToChop);
+            }
+            // 从队列中移除该单词的所有出现
             state.queue = state.queue.filter(item => item.word !== wordToChop);
             plan.queue = state.queue;
             plan.queueIndex = Math.min(state.currentIndex, state.queue.length - 1);
@@ -1744,6 +1894,13 @@ function renderQuizQuestion() {
             showToast(`已斩 "${wordToChop}"`, 'success');
             if (state.queue.length === 0) {
                 state.isQuizActive = false;
+                if (state.errorMode) {
+                    state.errorMode = false;
+                    document.getElementById('errorModeBadge').classList.add('hidden');
+                    document.getElementById('errorModeHint').classList.add('hidden');
+                    plan.errorMode = false;
+                    updatePlan(plan);
+                }
                 updateQuizUI();
             } else {
                 advanceToNext();
@@ -1769,7 +1926,6 @@ function renderQuizQuestion() {
     // 下一个按钮点击
     nextBtn.onclick = function() {
         if (nextBtn.disabled) return;
-        // 从当前+1开始找第一个未完成的
         let idx = state.currentIndex + 1;
         while (idx < state.queue.length && state.queue[idx].done) {
             idx++;
@@ -1780,7 +1936,6 @@ function renderQuizQuestion() {
             updatePlan(plan);
             renderQuizQuestion();
         } else {
-            // 没有未完成的，禁用按钮（理论上不会触发）
             nextBtn.disabled = true;
         }
     };
@@ -1873,6 +2028,12 @@ function updateQuizUI() {
     if (state.isQuizActive && state.queue && state.queue.length > 0) {
         empty.classList.add('hidden');
         active.classList.remove('hidden');
+        // 显示错误模式提示
+        if (state.errorMode) {
+            document.getElementById('errorModeHint').classList.remove('hidden');
+        } else {
+            document.getElementById('errorModeHint').classList.add('hidden');
+        }
         renderQuizQuestion();
     } else {
         empty.classList.remove('hidden');
@@ -1880,6 +2041,7 @@ function updateQuizUI() {
         chopBtn.classList.add('hidden');
         prevBtn.classList.add('hidden');
         nextBtn.classList.add('hidden');
+        document.getElementById('errorModeHint').classList.add('hidden');
     }
     updatePlanInfo();
 }
@@ -1933,7 +2095,8 @@ $('btnStartPlan')?.addEventListener('click', function() {
             dayIndex: 0,
             currentBook: state.currentBook,
             queue: [],
-            queueIndex: 0
+            queueIndex: 0,
+            errorMode: false
         };
         const queue = generateDailyQueue();
         if (queue.length === 0) return;
@@ -1943,6 +2106,9 @@ $('btnStartPlan')?.addEventListener('click', function() {
         state.queue = queue;
         state.currentIndex = 0;
         state.isQuizActive = true;
+        state.errorMode = false;
+        document.getElementById('errorModeBadge').classList.add('hidden');
+        document.getElementById('errorModeHint').classList.add('hidden');
         showToast(`📅 第1天开始，共 ${queue.length} 次复习`, 'success');
     } else {
         if (plan.queue && plan.queue.length > 0) {
@@ -1959,6 +2125,9 @@ $('btnStartPlan')?.addEventListener('click', function() {
                     state.queue = queue;
                     state.currentIndex = 0;
                     state.isQuizActive = true;
+                    state.errorMode = false;
+                    document.getElementById('errorModeBadge').classList.add('hidden');
+                    document.getElementById('errorModeHint').classList.add('hidden');
                     showToast(`📅 第 ${plan.dayIndex+1} 天开始`, 'success');
                 } else {
                     showToast('🎉 所有复习计划已完成！', 'success');
@@ -1973,6 +2142,9 @@ $('btnStartPlan')?.addEventListener('click', function() {
             state.queue = queue;
             state.currentIndex = 0;
             state.isQuizActive = true;
+            state.errorMode = false;
+            document.getElementById('errorModeBadge').classList.add('hidden');
+            document.getElementById('errorModeHint').classList.add('hidden');
             showToast('生成新的复习队列', 'success');
         }
     }
@@ -1985,10 +2157,13 @@ $('btnStartPlan')?.addEventListener('click', function() {
 
 $('btnResetPlan')?.addEventListener('click', function() {
     showConfirm('确定要重置所有复习进度吗？', () => {
-        updatePlan({ active: false, dayIndex: 0, queue: [], queueIndex: 0, currentBook: null });
+        updatePlan({ active: false, dayIndex: 0, queue: [], queueIndex: 0, currentBook: null, errorMode: false });
         state.isQuizActive = false;
         state.queue = [];
         state.currentIndex = 0;
+        state.errorMode = false;
+        document.getElementById('errorModeBadge').classList.add('hidden');
+        document.getElementById('errorModeHint').classList.add('hidden');
         updatePlanInfo();
         updateQuizUI();
         showToast('已重置计划', 'success');
@@ -2012,10 +2187,20 @@ $('btnResetQuiz')?.addEventListener('click', function() {
         state.quizCorrect = 0;
         state.quizWrong = 0;
         state.isQuizActive = true;
+        state.errorMode = false;
+        document.getElementById('errorModeBadge').classList.add('hidden');
+        document.getElementById('errorModeHint').classList.add('hidden');
         updateQuizUI();
         renderQuizQuestion();
         showToast('已重置今日复习', 'success');
     });
+});
+
+// ================================================================
+//  错误复习按钮
+// ================================================================
+$('btnReviewErrors')?.addEventListener('click', function() {
+    startErrorReview();
 });
 
 // ================================================================
@@ -2030,6 +2215,9 @@ window.selectBook = function(key) {
     state.quizCorrect = 0;
     state.quizWrong = 0;
     state.isQuizActive = false;
+    state.errorMode = false;
+    document.getElementById('errorModeBadge').classList.add('hidden');
+    document.getElementById('errorModeHint').classList.add('hidden');
     const plan = getPlan();
     if (plan.currentBook !== key) {
         plan.active = false;
@@ -2050,7 +2238,7 @@ $('btnSelectBook')?.addEventListener('click', function() {
 });
 
 // ================================================================
-//  导入相关（省略，因为之前已包含完整）
+//  导入相关
 // ================================================================
 document.getElementById('fileInputDict')?.addEventListener('change', function(e) {
     const file = this.files[0];
@@ -2087,6 +2275,58 @@ document.getElementById('fileInputPdf')?.addEventListener('change', function(e) 
     };
     reader.readAsArrayBuffer(file);
     this.value = '';
+});
+
+// 新增：粘贴词库内容
+document.getElementById('btnPasteDict')?.addEventListener('click', function() {
+    const text = document.getElementById('pasteDictText').value.trim();
+    if (!text) {
+        showToast('请先粘贴词库内容', 'error');
+        return;
+    }
+    try {
+        const lines = text.split(/\n/);
+        const parsed = [];
+        for (const line of lines) {
+            const entry = parseDictLine(line);
+            if (entry && entry.word && entry.meaning) {
+                const exist = parsed.find(i => i.word.toLowerCase() === entry.word.toLowerCase());
+                if (!exist) parsed.push({ word: entry.word.trim(), meaning: entry.meaning.trim() });
+            }
+        }
+        if (parsed.length === 0) {
+            throw new Error('未能解析出任何有效词条，请检查格式');
+        }
+        const data = loadData();
+        if (!data.dict) data.dict = [];
+        const merged = [...parsed];
+        for (const item of data.dict) {
+            const exist = merged.find(m => m.word.toLowerCase() === item.word.toLowerCase());
+            if (!exist) merged.push(item);
+            else exist.meaning = item.meaning;
+        }
+        dict = merged.sort((a,b) => a.word.localeCompare(b.word));
+        data.dict = dict;
+        saveData(data);
+        dictLoaded = true;
+        updateDictStatus('success');
+        renderDict();
+        renderPending();
+        renderBooks();
+        updateQuizUI();
+        document.getElementById('pasteResult').innerHTML =
+            `<span class="text-success">✅ 成功加载 ${parsed.length} 个词条，词库总数 ${dict.length}</span>`;
+        showToast(`✅ 词库已更新 (${dict.length} 词)`, 'success');
+    } catch(err) {
+        document.getElementById('pasteResult').innerHTML =
+            `<span class="text-danger">❌ 加载失败: ${err.message}</span>`;
+        showToast('❌ 词库加载失败，请检查内容格式', 'error');
+    }
+});
+
+document.getElementById('btnClearPaste')?.addEventListener('click', function() {
+    document.getElementById('pasteDictText').value = '';
+    document.getElementById('pasteResult').innerHTML = '';
 });
 
 function doImport(bookName, allWords) {
@@ -2411,10 +2651,74 @@ $('btnManualAdd')?.addEventListener('click', function() {
 });
 
 // ================================================================
-//  错误记录按钮
+//  错误记录按钮（在背诵页跳转）
 // ================================================================
 $('btnViewErrors')?.addEventListener('click', function() {
     document.querySelector('#tabNav button[data-tab="errors"]').click();
+});
+
+// ================================================================
+//  数据备份与恢复（APK 持久化方案）
+// ================================================================
+$('btnExportData')?.addEventListener('click', function() {
+    const data = loadData();
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `word_backup_${getTodayKey()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('数据导出成功', 'success');
+});
+
+document.getElementById('fileInputData')?.addEventListener('change', function(e) {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        try {
+            const data = JSON.parse(ev.target.result);
+            // 验证数据结构
+            if (!data.books || typeof data.books !== 'object') {
+                throw new Error('无效的数据文件');
+            }
+            // 确保兼容旧格式
+            for (const key in data.books) {
+                if (Array.isArray(data.books[key])) {
+                    data.books[key] = { words: data.books[key], chopped: [] };
+                }
+                if (!data.books[key].words) data.books[key].words = [];
+                if (!data.books[key].chopped) data.books[key].chopped = [];
+            }
+            // 保存数据
+            saveData(data);
+            // 刷新内存
+            dict = data.dict || [];
+            dictLoaded = true;
+            updateDictStatus('success');
+            // 重新初始化视图
+            initDict();
+            renderDict();
+            renderPending();
+            renderBooks();
+            updateQuizUI();
+            updatePlanInfo();
+            renderErrors();
+            document.getElementById('importDataStatus').innerHTML =
+                `<span class="text-success">✅ 数据导入成功！</span>`;
+            showToast('数据导入成功', 'success');
+        } catch(err) {
+            document.getElementById('importDataStatus').innerHTML =
+                `<span class="text-danger">❌ 导入失败: ${err.message}</span>`;
+            showToast('数据导入失败，请检查文件格式', 'error');
+        }
+    };
+    reader.readAsText(file);
+    this.value = '';
 });
 
 // ================================================================
@@ -2481,9 +2785,14 @@ function init() {
             state.queue = plan.queue;
             state.currentIndex = plan.queueIndex || 0;
             state.isQuizActive = true;
+            state.errorMode = plan.errorMode || false;
+            if (state.errorMode) {
+                document.getElementById('errorModeBadge').classList.remove('hidden');
+                document.getElementById('errorModeHint').classList.remove('hidden');
+            }
         }
     } else {
-        updatePlan({ active: false, dayIndex: 0, queue: [], queueIndex: 0, currentBook: null });
+        updatePlan({ active: false, dayIndex: 0, queue: [], queueIndex: 0, currentBook: null, errorMode: false });
     }
 
     const books = getBookNames();
