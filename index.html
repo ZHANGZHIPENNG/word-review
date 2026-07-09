@@ -2,10 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>考研英语 · 智能复习</title>
     <style>
-        /* ========== 全局样式 ========== */
+        /* ========== 完整样式 ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Roboto, sans-serif;
@@ -51,7 +51,7 @@
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
-            touch-action: none;
+            touch-action: manipulation;
         }
         button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
         button.primary { background: #1e293b; color: #fff; }
@@ -75,6 +75,8 @@
             background: #fafcfe;
             transition: 0.2s;
             color: #0f172a;
+            -webkit-user-select: text;
+            user-select: text;
         }
         input:focus, textarea:focus {
             outline: none;
@@ -98,6 +100,8 @@
             font-size: 12px;
             font-weight: 500;
             color: #334155;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .badge.primary { background: #1e293b; color: #fff; }
         .badge.success { background: #0b8a5e; color: #fff; }
@@ -122,6 +126,7 @@
             color: #475569;
             font-weight: 500;
             font-size: 14px;
+            touch-action: manipulation;
         }
         .tabs button.active {
             background: #ffffff;
@@ -177,7 +182,8 @@
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
-            touch-action: none;
+            touch-action: manipulation;
+            position: relative;
         }
         .quiz-options button.correct { border-color: #0b8a5e; background: #e6f7ef; color: #0b8a5e; }
         .quiz-options button.wrong { border-color: #b91c1c; background: #fde8e8; color: #b91c1c; }
@@ -197,6 +203,8 @@
             opacity: 0;
             transition: opacity 0.15s ease;
             display: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .long-press-tooltip.show { opacity: 1; display: block; }
         .error-feedback {
@@ -218,6 +226,7 @@
             max-height: 420px;
             overflow-y: auto;
             padding-right: 4px;
+            -webkit-overflow-scrolling: touch;
         }
         .word-list::-webkit-scrollbar { width: 5px; }
         .word-list::-webkit-scrollbar-thumb { background: #dce1e9; border-radius: 10px; }
@@ -231,6 +240,8 @@
             border: 1px solid transparent;
             transition: 0.15s;
             gap: 12px;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .word-item:hover { background: #f1f5f9; border-color: #e2e8f0; }
         .word-item .word { font-weight: 500; font-size: 15px; }
@@ -270,6 +281,9 @@
             margin-bottom: 8px;
             cursor: pointer;
             transition: 0.15s;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .book-item:hover { background: #eef2f6; }
         .book-item .info { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
@@ -291,6 +305,8 @@
             animation: slideUp 0.3s ease;
             max-width: 90%;
             text-align: center;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .toast.success { background: #0b8a5e; }
         .toast.error { background: #b91c1c; }
@@ -370,6 +386,8 @@
             align-items: center;
             gap: 6px;
             margin-left: 12px;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .dict-status.loading { background: #fef3c7; color: #92400e; }
         .dict-status.success { background: #d1fae5; color: #065f46; }
@@ -442,6 +460,9 @@
             border: 1.5px dashed #d97706;
             color: #d97706;
             padding: 8px 20px;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .quiz-chop-btn:hover { background: #fef3c7; transform: none; }
         .quiz-nav-btn {
@@ -449,6 +470,9 @@
             border: 1.5px solid #cbd5e1;
             padding: 8px 16px;
             font-size: 14px;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .quiz-nav-btn:hover { background: #f1f5f9; transform: none; }
         .quiz-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
@@ -467,6 +491,8 @@
             padding: 6px 12px;
             border-radius: 8px;
             display: inline-block;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .paste-area textarea {
             min-height: 150px;
@@ -556,11 +582,12 @@
 
         <!-- 导入 -->
         <div id="tabImport" class="tab-content hidden">
-            <!-- 内容与之前相同，省略以节省篇幅 -->
             <div class="grid-2">
                 <div class="card">
                     <div class="card-title">📂 上传词库文件 (TXT)</div>
-                    <p class="text-muted text-sm mb-12">选择你的 <code>dict.txt</code> 文件</p>
+                    <p class="text-muted text-sm mb-12">
+                        选择你的 <code>dict.txt</code> 文件（每行格式：<code>{ word: "xxx", meaning: "xxx" }</code>）
+                    </p>
                     <div class="file-upload-wrapper" style="width:100%;">
                         <button class="primary" style="width:100%;">📤 选择文件并加载词库</button>
                         <input type="file" id="fileInputDict" accept=".txt" />
@@ -569,7 +596,9 @@
                 </div>
                 <div class="card">
                     <div class="card-title">📝 粘贴词库内容</div>
-                    <p class="text-muted text-sm mb-12">复制 <code>dict.txt</code> 的全部内容粘贴到下方</p>
+                    <p class="text-muted text-sm mb-12">
+                        复制 <code>dict.txt</code> 的全部内容粘贴到下方，点击「加载粘贴内容」。
+                    </p>
                     <textarea id="pasteDictText" placeholder="将 dict.txt 的内容粘贴到这里..."></textarea>
                     <div class="flex mt-12">
                         <button class="success" id="btnPasteDict">📥 加载粘贴内容</button>
@@ -580,7 +609,7 @@
             </div>
             <div class="card mt-20">
                 <div class="card-title">📝 导入单词列表</div>
-                <p class="text-muted text-sm mb-12">每行一个英文单词</p>
+                <p class="text-muted text-sm mb-12">每行一个英文单词，自动匹配词库释义</p>
                 <textarea id="importText" placeholder="example&#10;abandon&#10;ability"></textarea>
                 <div class="flex mt-12">
                     <button class="primary" id="btnImportTxt">导入单词</button>
@@ -594,7 +623,7 @@
             </div>
             <div class="card mt-20">
                 <div class="card-title">📚 导入完整考研大纲词库（粘贴）</div>
-                <p class="text-muted text-sm mb-12">支持格式：<code>单词 /音标/ 释义</code> 或 <code>单词 释义</code></p>
+                <p class="text-muted text-sm mb-12">支持格式：<code>单词 /音标/ 释义</code> 或 <code>单词 释义</code>（每行一个）</p>
                 <textarea id="importPdfText" placeholder="粘贴考研大纲词库文本..."></textarea>
                 <div class="flex mt-12">
                     <button class="success" id="btnImportPdf">解析并导入词库</button>
@@ -617,7 +646,6 @@
 
         <!-- 单词本 -->
         <div id="tabBooks" class="tab-content">
-            <!-- 内容与之前相同，省略 -->
             <div id="bookListView">
                 <div class="flex-between mb-12">
                     <span class="card-title" style="margin-bottom:0;">📂 我的单词本</span>
@@ -655,7 +683,6 @@
 
         <!-- 设置 -->
         <div id="tabSettings" class="tab-content hidden">
-            <!-- 内容与之前相同，省略 -->
             <div class="card">
                 <div class="card-title">⚙️ 复习设置</div>
                 <div class="setting-row">
@@ -698,7 +725,6 @@
 
         <!-- 词库管理 -->
         <div id="tabManage" class="tab-content hidden">
-            <!-- 内容与之前相同，省略 -->
             <div class="card">
                 <div class="card-title">📋 词库管理</div>
                 <div class="flex-between">
@@ -740,7 +766,6 @@
 
         <!-- 错误记录 -->
         <div id="tabErrors" class="tab-content hidden">
-            <!-- 内容与之前相同，省略 -->
             <div class="card">
                 <div class="card-title">❌ 错误单词记录</div>
                 <p class="text-muted text-sm mb-12">所有背错过的单词及其总错误次数（累计）</p>
@@ -887,7 +912,7 @@
         }
 
         // ================================================================
-        //  词库核心（备用词库和完整功能）
+        //  词库核心
         // ================================================================
         const FALLBACK_DICT = [
             { word: "abandon", meaning: "离弃，丢弃；遗弃，抛弃；放弃" },
@@ -1066,25 +1091,15 @@
         }
 
         // ================================================================
-        //  长按功能（移动端适配 - 彻底阻止默认行为）
+        //  长按工具（手机适配，阻止默认菜单）
         // ================================================================
-        let longPressTimer = null;
-        let longPressActive = false;
-
         function setupLongPress(element, onLongPress, onRelease) {
-            // 彻底阻止右键菜单
-            element.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            });
+            let longPressTimer = null;
+            let longPressActive = false;
 
             const startLongPress = function(e) {
-                // 阻止所有默认行为（触摸选择、复制、菜单等）
-                if (e.type === 'touchstart') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
+                // 阻止默认行为（防止浏览器菜单）
+                e.preventDefault();
                 longPressActive = false;
                 if (longPressTimer) clearTimeout(longPressTimer);
                 longPressTimer = setTimeout(() => {
@@ -1094,6 +1109,7 @@
             };
 
             const endLongPress = function(e) {
+                e.preventDefault();
                 if (longPressTimer) {
                     clearTimeout(longPressTimer);
                     longPressTimer = null;
@@ -1104,22 +1120,25 @@
                 }
             };
 
-            // 鼠标事件
+            // 触摸事件（移动端）
+            element.addEventListener('touchstart', startLongPress, { passive: false });
+            element.addEventListener('touchend', endLongPress, { passive: false });
+            element.addEventListener('touchcancel', endLongPress, { passive: false });
+
+            // 鼠标事件（桌面端）
             element.addEventListener('mousedown', startLongPress);
             element.addEventListener('mouseup', endLongPress);
             element.addEventListener('mouseleave', endLongPress);
-            // 触摸事件（必须 passive: false 才能 preventDefault）
-            element.addEventListener('touchstart', startLongPress, { passive: false });
-            element.addEventListener('touchend', endLongPress, { passive: true });
-            element.addEventListener('touchcancel', endLongPress, { passive: true });
-            // 额外阻止 touchmove 默认行为（防止滚动时的干扰）
-            element.addEventListener('touchmove', function(e) {
+
+            // 阻止右键菜单（桌面）
+            element.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
-            }, { passive: false });
+                return false;
+            });
         }
 
         // ================================================================
-        //  待补全单词管理（仅展示核心函数，与之前完全相同）
+        //  待补全单词管理
         // ================================================================
         function getPendingWords() {
             const data = loadData();
@@ -1281,7 +1300,7 @@
         }
 
         // ================================================================
-        //  单词本管理（完整版，仅保留核心函数）
+        //  单词本管理
         // ================================================================
         function getTodayKey() { return new Date().toISOString().slice(0, 10); }
 
@@ -1446,7 +1465,7 @@
         }
 
         // ================================================================
-        //  计划管理（每个词本独立）
+        //  计划管理（每个词本独立，普通和错误分开）
         // ================================================================
         function getBookProgress(bookKey) {
             const data = loadData();
@@ -1883,7 +1902,7 @@
         });
 
         // ================================================================
-        //  复习核心（包含完整逻辑）
+        //  复习核心
         // ================================================================
 
         function generateDailyQueue(words, times) {
@@ -2286,16 +2305,24 @@
                     }
                     btn.style.cursor = 'default';
                 } else {
-                    // 为每个按钮绑定长按（已适配移动端）
+                    // 为按钮绑定长按（手机适配）
                     setupLongPress(btn,
                         function(e) {
                             if (optWord && optWord !== '') {
                                 const tooltip = document.getElementById('longPressTooltip');
                                 tooltip.textContent = optWord;
                                 tooltip.style.display = 'block';
-                                const pos = e.touches ? e.touches[0] : e;
-                                tooltip.style.left = (pos.clientX - tooltip.offsetWidth / 2) + 'px';
-                                tooltip.style.top = (pos.clientY - tooltip.offsetHeight - 10) + 'px';
+                                // 计算位置
+                                let clientX, clientY;
+                                if (e.touches) {
+                                    clientX = e.touches[0].clientX;
+                                    clientY = e.touches[0].clientY;
+                                } else {
+                                    clientX = e.clientX;
+                                    clientY = e.clientY;
+                                }
+                                tooltip.style.left = (clientX - tooltip.offsetWidth / 2) + 'px';
+                                tooltip.style.top = (clientY - tooltip.offsetHeight - 10) + 'px';
                                 tooltip.classList.add('show');
                             }
                         },
@@ -2334,7 +2361,7 @@
                                 advanceToNext();
                             }, 300);
                         } else {
-                            // 错误处理：按钮显示英文（中文）
+                            // 错误处理：显示英文（中文）
                             if (!state.wrongFlag) {
                                 state.wrongFlag = true;
                                 state.quizWrong++;
@@ -2863,8 +2890,105 @@
         });
 
         $('btnImportPdf')?.addEventListener('click', function() {
-            // 省略（与之前完全相同）
-            showToast('此功能已实现，请参考完整代码', 'info');
+            const text = $('importPdfText').value.trim();
+            if (!text) { showToast('请粘贴考研大纲词库文本或上传文件', 'error'); return; }
+            const progressBar = $('importProgress');
+            const progressFill = $('importProgressFill');
+            progressBar.classList.remove('hidden');
+            progressFill.style.width = '0%';
+
+            const lines = text.split(/\n/).filter(s => s.trim().length > 0);
+            const totalLines = lines.length;
+            let processed = 0,
+                parsed = 0,
+                skipped = 0;
+            const newEntries = [];
+            const data = loadData();
+            if (!data.dict) data.dict = [];
+
+            const patterns = [
+                /^([a-zA-Z\-']+)\s*\/[^\/]+\/\s*(.+)/,
+                /^([a-zA-Z\-']+)\s+\[[^\]]+\]\s+(.+)/,
+                /^([a-zA-Z\-']+)\s+(.+)/,
+                /^([a-zA-Z\-']+)\/[^\/]+\/(.+)/
+            ];
+
+            function isValidWordLine(line) {
+                const firstChar = line.trim()[0];
+                if (!firstChar) return false;
+                if (/[0-9\u4e00-\u9fa5]/.test(firstChar)) return false;
+                return true;
+            }
+
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                if (!isValidWordLine(line)) { skipped++; continue; }
+                let matched = false;
+                for (let pattern of patterns) {
+                    const match = line.match(pattern);
+                    if (match) {
+                        let word = match[1].trim();
+                        let meaning = match[2].trim();
+                        if (/[\u4e00-\u9fa5]/.test(word)) continue;
+                        if (!meaning) continue;
+                        meaning = meaning.replace(/[.;,。，\s]+$/, '').trim();
+                        if (word && meaning) {
+                            const exist = data.dict.find(item => item.word.toLowerCase() === word.toLowerCase());
+                            if (exist) exist.meaning = meaning;
+                            else { data.dict.push({ word, meaning });
+                                newEntries.push(word); }
+                            parsed++;
+                            matched = true;
+                            break;
+                        }
+                    }
+                }
+                if (!matched) {
+                    const parts = line.split(/\s+/);
+                    if (parts.length >= 2) {
+                        const word = parts[0];
+                        const meaning = parts.slice(1).join(' ');
+                        if (isEnglishWord(word) && meaning.length > 0) {
+                            const exist = data.dict.find(item => item.word.toLowerCase() === word.toLowerCase());
+                            if (exist) exist.meaning = meaning;
+                            else { data.dict.push({ word, meaning });
+                                newEntries.push(word); }
+                            parsed++;
+                        } else skipped++;
+                    } else skipped++;
+                }
+                processed++;
+                progressFill.style.width = Math.round((processed / totalLines) * 100) + '%';
+            }
+
+            saveData(data);
+            dict = data.dict.sort((a, b) => a.word.localeCompare(b.word));
+            dictLoaded = true;
+            updateDictStatus('success');
+            renderDict();
+
+            setTimeout(() => progressBar.classList.add('hidden'), 500);
+
+            const resultDiv = $('importPdfResult');
+            if (parsed === 0) {
+                resultDiv.innerHTML = `<span class="text-danger">❌ 解析失败，未能识别任何单词。请检查格式</span>`;
+                showToast('解析失败', 'error');
+            } else {
+                resultDiv.innerHTML = `
+                        <div class="text-success">✅ 成功解析并导入 <strong>${parsed}</strong> 个单词到词库</div>
+                        <div class="text-sm text-muted mt-12">新增/更新 ${newEntries.length} 个，跳过 ${skipped} 行</div>
+                        <div class="stats-grid">
+                            <div class="stat"><div class="num">${parsed}</div><div class="label">解析成功</div></div>
+                            <div class="stat"><div class="num">${newEntries.length}</div><div class="label">新增词条</div></div>
+                            <div class="stat"><div class="num">${skipped}</div><div class="label">跳过行</div></div>
+                        </div>
+                    `;
+                showToast(`✅ 词库已更新，导入 ${parsed} 个单词`, 'success');
+                $('importPdfText').value = '';
+                renderBooks();
+                updateQuizUI();
+            }
         });
 
         $('btnLoadSample')?.addEventListener('click', function() {
