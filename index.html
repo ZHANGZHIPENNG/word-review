@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>考研英语 · 智能复习</title>
     <style>
-        /* ========== 样式（完整保留，增加手机适配） ========== */
+        /* ========== 样式（与之前完全相同） ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Roboto, sans-serif;
@@ -160,7 +160,30 @@
             flex-direction: column;
             justify-content: center;
         }
-        .quiz-word { font-size: 38px; font-weight: 700; margin-bottom: 12px; color: #0f172a; }
+        .quiz-word {
+            font-size: 38px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #0f172a;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .quiz-word .speak-btn {
+            background: transparent;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: 0.2s;
+            border-radius: 50%;
+            line-height: 1;
+        }
+        .quiz-word .speak-btn:hover {
+            background: #e9edf2;
+            transform: scale(1.1);
+        }
         .quiz-options {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -508,6 +531,11 @@
             font-weight: 500;
             margin-left: 8px;
         }
+        .pos-tag {
+            font-weight: 600;
+            color: #d97706;
+            margin-right: 4px;
+        }
     </style>
 </head>
 <body>
@@ -546,7 +574,10 @@
                     <p style="font-size:14px;">请先导入单词或选择一个单词本</p>
                 </div>
                 <div id="quizActive" class="hidden">
-                    <div class="quiz-word" id="quizWord">abandon</div>
+                    <div class="quiz-word" id="quizWord">
+                        <span id="wordDisplay">abandon</span>
+                        <button class="speak-btn" id="btnSpeak" title="点击发音">🔊</button>
+                    </div>
                     <div class="quiz-hint" style="font-size:15px; color:#64748b; margin-bottom:28px;">请选择正确的中文释义</div>
                     <div class="quiz-options" id="quizOptions"></div>
                     <div class="error-feedback" id="errorFeedback">
@@ -584,7 +615,7 @@
                 <div class="card">
                     <div class="card-title">📂 上传词库文件 (TXT)</div>
                     <p class="text-muted text-sm mb-12">
-                        选择你的 <code>dict.txt</code> 文件（每行格式：<code>{ word: "xxx", meaning: "xxx" }</code>）
+                        选择你的 <code>dict.txt</code> 文件（每行格式：<code>{ word: "xxx", meaning: "xxx", pos: "v." }</code>）
                     </p>
                     <div class="file-upload-wrapper" style="width:100%;">
                         <button class="primary" style="width:100%;">📤 选择文件并加载词库</button>
@@ -756,6 +787,7 @@
                 <div class="flex">
                     <input type="text" id="manualWord" placeholder="英文单词" style="flex:1; max-width:200px;" />
                     <input type="text" id="manualMeaning" placeholder="中文释义" style="flex:2; max-width:350px;" />
+                    <input type="text" id="manualPos" placeholder="词性 (如 v.)" style="flex:1; max-width:120px;" />
                     <button class="success" id="btnManualAdd">添加</button>
                 </div>
                 <div class="mt-12 text-sm text-muted" id="manualResult"></div>
@@ -913,26 +945,26 @@
         //  词库核心
         // ================================================================
         const FALLBACK_DICT = [
-            { word: "abandon", meaning: "离弃，丢弃；遗弃，抛弃；放弃" },
-            { word: "ability", meaning: "能力；本领；才能" },
-            { word: "able", meaning: "有能力的；能干的" },
-            { word: "abnormal", meaning: "反常的；异常的" },
-            { word: "aboard", meaning: "在船/飞机/车上；上船/飞机/车" },
-            { word: "abolish", meaning: "废除；废止" },
-            { word: "abound", meaning: "大量存在；富于" },
-            { word: "about", meaning: "关于；大约；在…周围" },
-            { word: "above", meaning: "在…上方；超过" },
-            { word: "abroad", meaning: "到国外；在国外" },
-            { word: "abrupt", meaning: "突然的；唐突的" },
-            { word: "absence", meaning: "缺席；缺乏" },
-            { word: "absent", meaning: "缺席的；缺乏的" },
-            { word: "absolute", meaning: "绝对的；完全的" },
-            { word: "absorb", meaning: "吸收；使专心" },
-            { word: "abstract", meaning: "抽象的；摘要" },
-            { word: "absurd", meaning: "荒谬的；可笑的" },
-            { word: "abundance", meaning: "丰富；充裕" },
-            { word: "abundant", meaning: "丰富的；充裕的" },
-            { word: "abuse", meaning: "滥用；虐待；辱骂" },
+            { word: "abandon", meaning: "离弃，丢弃；遗弃，抛弃；放弃", pos: "v." },
+            { word: "ability", meaning: "能力；本领；才能；专门技能，天资", pos: "n." },
+            { word: "able", meaning: "有能力的；能干的", pos: "adj." },
+            { word: "abnormal", meaning: "反常的；异常的", pos: "adj." },
+            { word: "aboard", meaning: "在船/飞机/车上；上船/飞机/车", pos: "adv./prep." },
+            { word: "abolish", meaning: "废除；废止", pos: "v." },
+            { word: "abound", meaning: "大量存在；富于", pos: "v." },
+            { word: "about", meaning: "关于；大约；在…周围", pos: "prep./adv." },
+            { word: "above", meaning: "在…上方；超过", pos: "prep./adv." },
+            { word: "abroad", meaning: "到国外；在国外", pos: "adv." },
+            { word: "abrupt", meaning: "突然的；唐突的", pos: "adj." },
+            { word: "absence", meaning: "缺席；缺乏", pos: "n." },
+            { word: "absent", meaning: "缺席的；缺乏的", pos: "adj." },
+            { word: "absolute", meaning: "绝对的；完全的", pos: "adj." },
+            { word: "absorb", meaning: "吸收；使专心", pos: "v." },
+            { word: "abstract", meaning: "抽象的；摘要", pos: "adj./n." },
+            { word: "absurd", meaning: "荒谬的；可笑的", pos: "adj." },
+            { word: "abundance", meaning: "丰富；充裕", pos: "n." },
+            { word: "abundant", meaning: "丰富的；充裕的", pos: "adj." },
+            { word: "abuse", meaning: "滥用；虐待；辱骂", pos: "v./n." },
         ];
 
         let dict = [];
@@ -953,23 +985,31 @@
             }
         }
 
+        // parseDictLine 支持 pos
         function parseDictLine(line) {
             line = line.trim();
             if (!line) return null;
             const patterns = [
+                /\{\s*word\s*:\s*["']([^"']+)["']\s*,\s*meaning\s*:\s*["']([^"']+)["']\s*,\s*pos\s*:\s*["']([^"']+)["']\s*\}/,
+                /\{\s*meaning\s*:\s*["']([^"']+)["']\s*,\s*word\s*:\s*["']([^"']+)["']\s*,\s*pos\s*:\s*["']([^"']+)["']\s*\}/,
                 /\{\s*word\s*:\s*["']([^"']+)["']\s*,\s*meaning\s*:\s*["']([^"']+)["']\s*\}/,
                 /\{\s*meaning\s*:\s*["']([^"']+)["']\s*,\s*word\s*:\s*["']([^"']+)["']\s*\}/,
             ];
             for (const p of patterns) {
                 const m = line.match(p);
                 if (m) {
-                    if (p === patterns[1]) return { word: m[2].trim(), meaning: m[1].trim() };
-                    return { word: m[1].trim(), meaning: m[2].trim() };
+                    if (p === patterns[0]) return { word: m[1].trim(), meaning: m[2].trim(), pos: m[3].trim() };
+                    if (p === patterns[1]) return { word: m[2].trim(), meaning: m[1].trim(), pos: m[3].trim() };
+                    if (p === patterns[2]) return { word: m[1].trim(), meaning: m[2].trim(), pos: '' };
+                    if (p === patterns[3]) return { word: m[2].trim(), meaning: m[1].trim(), pos: '' };
                 }
             }
             const w = line.match(/word\s*:\s*["']([^"']+)["']/);
             const me = line.match(/meaning\s*:\s*["']([^"']+)["']/);
-            if (w && me) return { word: w[1].trim(), meaning: me[1].trim() };
+            const po = line.match(/pos\s*:\s*["']([^"']+)["']/);
+            if (w && me) {
+                return { word: w[1].trim(), meaning: me[1].trim(), pos: po ? po[1].trim() : '' };
+            }
             return null;
         }
 
@@ -980,7 +1020,7 @@
                 const entry = parseDictLine(line);
                 if (entry && entry.word && entry.meaning) {
                     const exist = parsed.find(i => i.word.toLowerCase() === entry.word.toLowerCase());
-                    if (!exist) parsed.push({ word: entry.word.trim(), meaning: entry.meaning.trim() });
+                    if (!exist) parsed.push({ word: entry.word.trim(), meaning: entry.meaning.trim(), pos: entry.pos || '' });
                 }
             }
             if (parsed.length === 0) throw new Error('未能解析出任何有效词条');
@@ -990,7 +1030,10 @@
             for (const item of userDict) {
                 const exist = merged.find(m => m.word.toLowerCase() === item.word.toLowerCase());
                 if (!exist) merged.push(item);
-                else exist.meaning = item.meaning;
+                else {
+                    exist.meaning = item.meaning;
+                    if (item.pos) exist.pos = item.pos;
+                }
             }
             dict = merged.sort((a, b) => a.word.localeCompare(b.word));
             data.dict = dict;
@@ -1049,6 +1092,12 @@
             return found ? found.meaning : null;
         }
 
+        function lookupPos(word) {
+            const w = word.trim().toLowerCase();
+            const found = dict.find(item => item.word.toLowerCase() === w);
+            return found ? (found.pos || '') : '';
+        }
+
         // ================================================================
         //  形近词工具
         // ================================================================
@@ -1089,31 +1138,29 @@
         }
 
         // ================================================================
-        //  长按工具（修复：不阻止 click 事件）
+        //  长按工具（完全禁用系统菜单）
         // ================================================================
         function setupLongPress(element, onLongPress, onRelease) {
             let longPressTimer = null;
             let longPressActive = false;
 
-            // 阻止系统长按菜单（contextmenu）
             element.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
                 return false;
             }, false);
 
             const startLongPress = function(e) {
-                // 不阻止默认行为，让 click 可以正常触发
+                e.preventDefault();
                 longPressActive = false;
                 if (longPressTimer) clearTimeout(longPressTimer);
                 longPressTimer = setTimeout(() => {
                     longPressActive = true;
-                    // 长按时，阻止默认行为（防止系统菜单，但这里已经晚了，我们用 contextmenu 阻止）
-                    // 实际上，contextmenu 已经阻止了，这里只做逻辑
                     if (onLongPress) onLongPress(e);
                 }, 600);
             };
 
             const endLongPress = function(e) {
+                e.preventDefault();
                 if (longPressTimer) {
                     clearTimeout(longPressTimer);
                     longPressTimer = null;
@@ -1124,15 +1171,30 @@
                 }
             };
 
-            // 触摸事件（移动端）
-            element.addEventListener('touchstart', startLongPress, { passive: true });
-            element.addEventListener('touchend', endLongPress, { passive: true });
-            element.addEventListener('touchcancel', endLongPress, { passive: true });
-
-            // 鼠标事件（桌面端）
+            element.addEventListener('touchstart', startLongPress, { passive: false });
+            element.addEventListener('touchend', endLongPress, { passive: false });
+            element.addEventListener('touchcancel', endLongPress, { passive: false });
             element.addEventListener('mousedown', startLongPress);
             element.addEventListener('mouseup', endLongPress);
             element.addEventListener('mouseleave', endLongPress);
+        }
+
+        // ================================================================
+        //  发音功能
+        // ================================================================
+        function speakWord(word) {
+            if (!window.speechSynthesis) {
+                console.warn('语音合成不支持');
+                return;
+            }
+            // 取消当前正在播放的语音，避免重叠
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            window.speechSynthesis.speak(utterance);
         }
 
         // ================================================================
@@ -1181,7 +1243,7 @@
                     if (exist) {
                         exist.meaning = trimmed;
                     } else {
-                        data.dict.push({ word: word.trim(), meaning: trimmed });
+                        data.dict.push({ word: word.trim(), meaning: trimmed, pos: '' });
                     }
                     data.pending = data.pending.filter(w => w.toLowerCase() !== word.toLowerCase());
                     saveData(data);
@@ -1192,7 +1254,7 @@
                     renderPending();
                     renderBooks();
                     updateQuizUI();
-                    showToast(`✅ "${word}" 已补全为 "${trimmed}"`, 'success');
+                    showToast(`✅ "${word}" 已补全`, 'success');
                 }
             );
         }
@@ -1240,7 +1302,7 @@
                 if (exist) {
                     exist.meaning = meaning;
                 } else {
-                    data.dict.push({ word, meaning });
+                    data.dict.push({ word, meaning, pos: '' });
                 }
                 addedWords.push(word);
                 data.pending = data.pending.filter(w => w.toLowerCase() !== word.toLowerCase());
@@ -1255,7 +1317,7 @@
             renderBooks();
             updateQuizUI();
             document.getElementById('pendingStatus').innerHTML =
-                `<span class="text-success">✅ 成功补全 ${addedWords.length} 个单词，已加入词库</span>`;
+                `<span class="text-success">✅ 成功补全 ${addedWords.length} 个单词</span>`;
             showToast(`✅ 已补全 ${addedWords.length} 个单词`, 'success');
         }
 
@@ -1463,7 +1525,7 @@
         }
 
         // ================================================================
-        //  计划管理（每个词本独立，普通和错误分开）
+        //  计划管理
         // ================================================================
         function getBookProgress(bookKey) {
             const data = loadData();
@@ -2083,11 +2145,11 @@
         }
 
         // ----------------------------------------------------------------
-        //  核心渲染函数（包含长按和错误显示）
+        //  核心渲染函数（包含自动发音、删除正确提示）
         // ----------------------------------------------------------------
         function renderQuizQuestion() {
             const container = $('quizOptions');
-            const wordEl = $('quizWord');
+            const wordEl = $('wordDisplay');
             const progressEl = $('quizProgress');
             const correctEl = $('quizCorrect');
             const wrongEl = $('quizWrong');
@@ -2097,6 +2159,7 @@
             const nextBtn = document.getElementById('btnNextWord');
             const errorFeedback = document.getElementById('errorFeedback');
             const errorWordDisplay = document.getElementById('errorWordDisplay');
+            const speakBtn = document.getElementById('btnSpeak');
 
             if (state.reviewMode === 'error') {
                 if (!state.errorQueue || state.errorQueue.length === 0) {
@@ -2125,6 +2188,7 @@
                     chopBtn.classList.add('hidden');
                     prevBtn.classList.add('hidden');
                     nextBtn.classList.add('hidden');
+                    speakBtn.classList.add('hidden');
                     errorFeedback.classList.remove('show');
                     return;
                 }
@@ -2156,6 +2220,20 @@
                 advanceToNext();
                 return;
             }
+            const pos = lookupPos(word);
+
+            // 更新显示单词和发音按钮
+            wordEl.textContent = word;
+            speakBtn.classList.remove('hidden');
+            speakBtn.onclick = function(e) {
+                e.stopPropagation();
+                speakWord(word);
+            };
+
+            // =============================================
+            // 自动发音（每次展示新单词时播放一次）
+            // =============================================
+            speakWord(word);
 
             const totalItems = state.queue.length;
             const roundSize = state.roundSize || state.reviewableWords.length || 1;
@@ -2170,14 +2248,14 @@
                 if (!state.queue[i].done) totalRemain++;
             }
 
-            // 生成选项
+            // 生成选项（包含 pos）
             const similar = findSimilarWords(word, dict, 3);
             let optionItems = [];
-            optionItems.push({ meaning: meaning, word: word });
+            optionItems.push({ meaning: meaning, word: word, pos: pos });
             let usedWords = new Set([word.toLowerCase()]);
             for (const s of similar) {
                 if (!usedWords.has(s.word.toLowerCase())) {
-                    optionItems.push({ meaning: s.meaning, word: s.word });
+                    optionItems.push({ meaning: s.meaning, word: s.word, pos: s.pos || '' });
                     usedWords.add(s.word.toLowerCase());
                 }
             }
@@ -2186,16 +2264,15 @@
             for (const item2 of shuffledAll) {
                 if (optionItems.length >= 4) break;
                 if (!usedWords.has(item2.word.toLowerCase())) {
-                    optionItems.push({ meaning: item2.meaning, word: item2.word });
+                    optionItems.push({ meaning: item2.meaning, word: item2.word, pos: item2.pos || '' });
                     usedWords.add(item2.word.toLowerCase());
                 }
             }
             while (optionItems.length < 4) {
-                optionItems.push({ meaning: '—', word: '' });
+                optionItems.push({ meaning: '—', word: '', pos: '' });
             }
             const finalOptions = shuffleArray([...optionItems]);
 
-            wordEl.textContent = word;
             const modeLabel = state.reviewMode === 'error' ? '（错误复习）' : '';
             const totalRoundsDisplay = state.totalRounds || 0;
             progressEl.textContent = `第 ${currentRound}/${totalRoundsDisplay} 轮 · 本轮剩余 ${roundRemain} 个 ${modeLabel}`;
@@ -2296,8 +2373,14 @@
                 const btn = document.createElement('button');
                 const optMeaning = optItem.meaning || '—';
                 const optWord = optItem.word || '';
+                const optPos = optItem.pos || '';
 
-                btn.textContent = optMeaning;
+                // 显示词性 + 释义
+                let displayText = optMeaning;
+                if (optPos) {
+                    displayText = optPos + ' ' + optMeaning;
+                }
+                btn.textContent = displayText;
 
                 if (isDone) {
                     btn.disabled = true;
@@ -2306,14 +2389,13 @@
                     }
                     btn.style.cursor = 'default';
                 } else {
-                    // 为每个按钮设置长按（使用修复后的 setupLongPress）
+                    // 长按显示英文
                     setupLongPress(btn,
                         function(e) {
                             if (optWord && optWord !== '') {
                                 const tooltip = document.getElementById('longPressTooltip');
                                 tooltip.textContent = optWord;
                                 tooltip.style.display = 'block';
-                                // 获取触摸或鼠标位置
                                 let clientX, clientY;
                                 if (e.touches) {
                                     clientX = e.touches[0].clientX;
@@ -2335,12 +2417,6 @@
                     );
 
                     btn.addEventListener('click', function(e) {
-                        // 如果长按触发，点击事件仍然会触发，但我们希望点击时执行选择逻辑
-                        // 但长按时我们不想执行点击，通过一个标志区分
-                        // 但我们的长按不会阻止点击，所以点击事件会正常执行。
-                        // 为了区分，我们可以检查是否长按，但简单起见，点击事件总是执行。
-                        // 因为我们希望点击就是选择，长按就是显示英文。
-                        // 这样两者互不干扰。
                         const selected = optMeaning;
                         const isCorrect = (optWord.toLowerCase() === word.toLowerCase());
 
@@ -2348,7 +2424,8 @@
                             item.done = true;
                             state.quizCorrect++;
                             updateRecord(word, getTodayKey(), 1, 0);
-                            showToast('✅ 正确！', 'success');
+                            // ===== 删除“正确”提示 Toast =====
+                            // showToast('✅ 正确！', 'success');  // 已注释移除
                             errorFeedback.classList.remove('show');
                             document.getElementById('longPressTooltip').classList.remove('show');
                             document.getElementById('longPressTooltip').style.display = 'none';
@@ -2377,7 +2454,7 @@
                                 errorFeedback.classList.add('show');
                                 showToast('❌ 错误，请再选一次', 'error');
                             }
-                            // 修改当前错误按钮的文本，显示英文和中文
+                            // 修改错误按钮文本，显示英文和中文
                             if (optWord && optWord !== '') {
                                 this.textContent = optWord + '（' + optMeaning + '）';
                             }
@@ -2412,6 +2489,7 @@
             const chopBtn = document.getElementById('btnChopCurrent');
             const prevBtn = document.getElementById('btnPrevWord');
             const nextBtn = document.getElementById('btnNextWord');
+            const speakBtn = document.getElementById('btnSpeak');
             const errorFeedback = document.getElementById('errorFeedback');
             if (state.currentBook) {
                 const total = state.currentWords.length;
@@ -2434,6 +2512,7 @@
                 chopBtn.classList.add('hidden');
                 prevBtn.classList.add('hidden');
                 nextBtn.classList.add('hidden');
+                speakBtn.classList.add('hidden');
                 errorFeedback.classList.remove('show');
             }
             updatePlanInfo();
@@ -2819,7 +2898,8 @@
                     const entry = parseDictLine(line);
                     if (entry && entry.word && entry.meaning) {
                         const exist = parsed.find(i => i.word.toLowerCase() === entry.word.toLowerCase());
-                        if (!exist) parsed.push({ word: entry.word.trim(), meaning: entry.meaning.trim() });
+                        if (!exist) parsed.push({ word: entry.word.trim(), meaning: entry.meaning.trim(), pos: entry.pos ||
+                                '' });
                     }
                 }
                 if (parsed.length === 0) {
@@ -2831,7 +2911,10 @@
                 for (const item of data.dict) {
                     const exist = merged.find(m => m.word.toLowerCase() === item.word.toLowerCase());
                     if (!exist) merged.push(item);
-                    else exist.meaning = item.meaning;
+                    else {
+                        exist.meaning = item.meaning;
+                        if (item.pos) exist.pos = item.pos;
+                    }
                 }
                 dict = merged.sort((a, b) => a.word.localeCompare(b.word));
                 data.dict = dict;
@@ -2943,7 +3026,7 @@
                         if (word && meaning) {
                             const exist = data.dict.find(item => item.word.toLowerCase() === word.toLowerCase());
                             if (exist) exist.meaning = meaning;
-                            else { data.dict.push({ word, meaning });
+                            else { data.dict.push({ word, meaning, pos: '' });
                                 newEntries.push(word); }
                             parsed++;
                             matched = true;
@@ -2959,7 +3042,7 @@
                         if (isEnglishWord(word) && meaning.length > 0) {
                             const exist = data.dict.find(item => item.word.toLowerCase() === word.toLowerCase());
                             if (exist) exist.meaning = meaning;
-                            else { data.dict.push({ word, meaning });
+                            else { data.dict.push({ word, meaning, pos: '' });
                                 newEntries.push(word); }
                             parsed++;
                         } else skipped++;
@@ -3163,12 +3246,17 @@
         $('btnManualAdd')?.addEventListener('click', function() {
             const word = $('manualWord').value.trim();
             const meaning = $('manualMeaning').value.trim();
+            const pos = $('manualPos').value.trim();
             if (!word || !meaning) { showToast('请填写单词和释义', 'error'); return; }
             const data = loadData();
             if (!data.dict) data.dict = [];
             const exist = data.dict.find(item => item.word.toLowerCase() === word.toLowerCase());
-            if (exist) exist.meaning = meaning;
-            else data.dict.push({ word, meaning });
+            if (exist) {
+                exist.meaning = meaning;
+                if (pos) exist.pos = pos;
+            } else {
+                data.dict.push({ word, meaning, pos: pos || '' });
+            }
             if (data.pending) {
                 data.pending = data.pending.filter(w => w.toLowerCase() !== word.toLowerCase());
             }
@@ -3182,6 +3270,7 @@
             updateQuizUI();
             $('manualWord').value = '';
             $('manualMeaning').value = '';
+            $('manualPos').value = '';
             showToast(`已添加/更新 "${word}"`, 'success');
         });
 
@@ -3302,4 +3391,3 @@
     </script>
 </body>
 </html>
-
